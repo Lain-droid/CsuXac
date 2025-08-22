@@ -13,6 +13,8 @@ dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         mavenCentral()
+        maven("https://repo.papermc.io/repository/maven-public/")
+        maven("https://repo.spongepowered.org/maven")
         maven("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven")
         maven("https://maven.pkg.jetbrains.space/public/p/kotlinx-html/maven")
     }

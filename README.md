@@ -82,9 +82,10 @@ src/main/kotlin/com/csuxac/
 
 ### Prerequisites
 
-- Java 21+
-- Gradle 8.5+
-- Kotlin 1.9.21+
+- **Minecraft Server**: Paper 1.21+ (Recommended: Paper 1.21.1+)
+- **Java**: Java 21+
+- **Gradle**: Gradle 8.5+
+- **Kotlin**: Kotlin 1.9.21+
 
 ### Building
 
@@ -95,15 +96,22 @@ src/main/kotlin/com/csuxac/
 # Compile and build JAR
 ./gradlew build shadowJar
 
-# Run the application
-java -jar releases/csuxac-core-1.0.0.jar
+# The plugin JAR will be created in build/libs/
 ```
+
+### Installation
+
+1. **Download** the `csuxac-core-1.0.0.jar` from the releases folder
+2. **Place** the JAR file in your server's `plugins/` directory
+3. **Restart** your Minecraft server
+4. **Configure** permissions for your staff members
 
 ### Release Artifacts
 
-- **JAR File**: `releases/csuxac-core-1.0.0.jar` (7.2MB)
-- **Platform**: JVM-compatible (Windows, Linux, macOS)
+- **Plugin JAR**: `releases/csuxac-core-1.0.0.jar` (7.1MB)
+- **Platform**: Paper 1.21+ compatible
 - **Dependencies**: Self-contained with shadow JAR
+- **Installation**: Drop into plugins folder and restart server
 
 ## ⚙️ Configuration
 

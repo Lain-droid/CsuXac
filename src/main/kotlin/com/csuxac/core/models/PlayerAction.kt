@@ -36,6 +36,7 @@ enum class ActionType(val category: ActionCategory, val riskLevel: RiskLevel) {
     PLACE_BLOCK(ActionCategory.BLOCK, RiskLevel.MEDIUM),
     BREAK_BLOCK(ActionCategory.BLOCK, RiskLevel.MEDIUM),
     USE_ITEM(ActionCategory.BLOCK, RiskLevel.LOW),
+    INTERACT(ActionCategory.BLOCK, RiskLevel.LOW),
     
     // Inventory actions
     CLICK_INVENTORY(ActionCategory.INVENTORY, RiskLevel.LOW),

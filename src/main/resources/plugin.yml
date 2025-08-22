@@ -1,0 +1,34 @@
+name: CsuXac Core
+version: ${version}
+main: com.csuxac.SimpleCsuXacPlugin
+api-version: '1.21'
+authors: [CsuXac Security Team]
+description: Ultimate Anti-Cheat System with Zero-Tolerance Policy
+website: https://csuxac.dev
+softdepend: [Vault]
+permissions:
+  csuxac.admin:
+    description: Full access to CsuXac Core
+    default: op
+  csuxac.monitor:
+    description: View anti-cheat statistics
+    default: op
+  csuxac.bypass:
+    description: Bypass anti-cheat checks (for testing)
+    default: op
+  csuxac.notify:
+    description: Receive violation notifications
+    default: op
+commands:
+  csuxac:
+    description: Main CsuXac Core command
+    usage: /csuxac <reload|status|stats|test>
+    permission: csuxac.admin
+  csuxacreload:
+    description: Reload CsuXac Core configuration
+    usage: /csuxacreload
+    permission: csuxac.admin
+  csuxacstatus:
+    description: Check CsuXac Core status
+    usage: /csuxacstatus
+    permission: csuxac.monitor
