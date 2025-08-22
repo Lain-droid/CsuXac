@@ -1,0 +1,227 @@
+# CsuXac Configuration File
+# This file contains all configuration options for the CsuXac Anti-Cheat System
+
+security:
+  enabled: true
+  strictMode: true
+  
+  encryption:
+    algorithm: "AES-256-GCM"
+    keySize: 256
+    hmacAlgorithm: "HmacSHA256"
+    keyRotationInterval: 86400000
+    enablePerfectForwardSecrecy: true
+  
+  detection:
+    movement:
+      enabled: true
+      maxVelocity: 5.0
+      maxAcceleration: 20.0
+      collisionCheckEnabled: true
+      subTickAnalysis: true
+      teleportThreshold: 50.0
+      flyHackDetection: true
+      speedHackThreshold: 1.5
+    
+    combat:
+      enabled: true
+      reachValidation: true
+      maxReach: 6.0
+      attackCooldownCheck: true
+      hitRegistrationValidation: true
+      killAuraDetection: true
+      criticalHitValidation: true
+    
+    interaction:
+      enabled: true
+      blockBreakTimeValidation: true
+      xrayDetection: true
+      nukerDetection: true
+      fastBreakThreshold: 0.8
+      viewFrustumCheck: true
+      chunkVisibilityValidation: true
+    
+    network:
+      enabled: true
+      packetValidation: true
+      rateLimiting: true
+      desyncDetection: true
+      replayProtection: true
+      spoofingDetection: true
+      maxPacketRate: 1000
+    
+    client:
+      enabled: true
+      memoryScanning: true
+      threadMonitoring: true
+      apiCallAnalysis: true
+      hookDetection: true
+      modDetection: true
+      autoClickerDetection: true
+  
+  response:
+    immediateActions: ["kick", "freeze"]
+    warningThreshold: 3
+    banThreshold: 10
+    quarantineMode: true
+    rollbackEnabled: true
+    challengeResponse: true
+  
+  integrity:
+    jvmIntegrityCheck: true
+    memoryScrambling: true
+    debuggerDetection: true
+    tamperDetection: true
+    codeInjectionDetection: true
+
+cluster:
+  enabled: true
+  mode: "MASTER_WORKER"
+  masterNode: "localhost:6379"
+  workerNodes: []
+  
+  redis:
+    host: "localhost"
+    port: 6379
+    password: null
+    database: 0
+    connectionPool: 10
+    timeout: 5000
+    ssl: false
+  
+  loadBalancing:
+    algorithm: "ROUND_ROBIN"
+    healthCheckInterval: 5000
+    maxFailures: 3
+  
+  failover:
+    enabled: true
+    autoFailover: true
+    failoverTimeout: 30000
+    healthCheckInterval: 10000
+
+monitoring:
+  enabled: true
+  
+  dashboard:
+    enabled: true
+    port: 8080
+    host: "0.0.0.0"
+    authentication: true
+    ssl: false
+    refreshInterval: 1000
+  
+  metrics:
+    enabled: true
+    prometheus: true
+    jvmMetrics: true
+    customMetrics: true
+    collectionInterval: 5000
+  
+  logging:
+    level: "INFO"
+    file: "logs/csuxac.log"
+    maxFileSize: "100MB"
+    maxFiles: 10
+    console: true
+    structured: true
+  
+  alerting:
+    enabled: true
+    webhooks: []
+    email: null
+    slack: null
+    threshold:
+      critical: 10
+      warning: 5
+      info: 1
+
+performance:
+  threadPool:
+    coreSize: 8
+    maxSize: 16
+    queueCapacity: 10000
+    keepAliveTime: 60000
+  
+  memory:
+    maxHeapSize: "2G"
+    offHeapEnabled: true
+    offHeapSize: "1G"
+    objectPooling: true
+    leakDetection: true
+  
+  gc:
+    gcType: "G1GC"
+    maxGCPauseMillis: 200
+    heapRegionSize: "16M"
+    g1HeapRegionSize: "16M"
+  
+  optimization:
+    jitCompilation: true
+    cpuPinning: true
+    numaAwareness: true
+    vectorization: true
+
+ai:
+  enabled: true
+  
+  models:
+    behavioralFingerprint: true
+    anomalyDetection: true
+    clustering: true
+    neuralNetwork: true
+    modelPath: "models/"
+  
+  training:
+    enabled: true
+    batchSize: 1000
+    epochs: 100
+    learningRate: 0.001
+    validationSplit: 0.2
+  
+  inference:
+    batchProcessing: true
+    maxBatchSize: 100
+    timeout: 100
+    fallbackToRules: true
+  
+  feedback:
+    enabled: true
+    falsePositiveReporting: true
+    modelRetraining: true
+    adaptiveThresholds: true
+
+network:
+  bindAddress: "0.0.0.0"
+  port: 25565
+  maxConnections: 10000
+  connectionTimeout: 30000
+  readTimeout: 30000
+  writeTimeout: 30000
+  
+  ssl:
+    enabled: false
+    keystore: ""
+    keystorePassword: ""
+    truststore: ""
+    truststorePassword: ""
+
+client:
+  agent:
+    enabled: true
+    size: "256KB"
+    encryption: true
+    selfDestruct: true
+    memoryOnly: true
+  
+  challenge:
+    enabled: true
+    timeout: 5000
+    maxRetries: 3
+    complexity: 8
+  
+  integrity:
+    memoryScanning: true
+    threadMonitoring: true
+    apiHooking: true
+    codeInjection: true

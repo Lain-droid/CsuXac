@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Main-Class: com.csuxac.CsuXacApplicationKt
+Implementation-Title: CsuXac Anti-Cheat
+Implementation-Version: 1.0.0-SNAPSHOT
+Implementation-Vendor: CsuXac Security Team
+Built-By: ubuntu
+Built-Date: 1755873438277
+Built-JDK: 21.0.7
+
