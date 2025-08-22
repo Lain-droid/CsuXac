@@ -1,6 +1,7 @@
 package com.csuxac.core.models
 
 import kotlin.math.sqrt
+import kotlin.math.pow
 
 /**
  * 3D Vector representation for Minecraft coordinates

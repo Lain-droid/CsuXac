@@ -10,6 +10,8 @@ import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.log
 import kotlin.math.sqrt
+import kotlin.math.pow
+import kotlin.math.min
 
 /**
  * BehaviorPatternAnalyzer - Advanced behavior analysis for cheat detection

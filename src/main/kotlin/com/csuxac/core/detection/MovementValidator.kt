@@ -11,6 +11,7 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
+import kotlin.math.pow
 
 /**
  * MovementValidator - Comprehensive movement validation system

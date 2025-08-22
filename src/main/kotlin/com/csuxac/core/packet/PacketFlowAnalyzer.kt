@@ -10,6 +10,8 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.abs
 import kotlin.math.sqrt
+import kotlin.math.pow
+import kotlin.math.min
 
 /**
  * PacketFlowAnalyzer - Advanced packet analysis and fingerprinting system

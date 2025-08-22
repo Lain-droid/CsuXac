@@ -1,39 +1,23 @@
 package com.csuxac.core
 
 import com.csuxac.config.SecurityConfig
+import com.csuxac.core.models.*
 import com.csuxac.core.detection.*
 import com.csuxac.core.enforcement.*
 import com.csuxac.core.monitoring.*
-import com.csuxac.core.physics.*
-import com.csuxac.core.packet.*
-import com.csuxac.core.adaptation.*
+import com.csuxac.core.physics.PhysicsSimulator
+import com.csuxac.core.packet.PacketFlowAnalyzer
+import com.csuxac.core.adaptation.SelfEvolvingDefense
 import com.csuxac.util.logging.defaultLogger
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
- * CsuXac Core Security Engine - Ultimate Anti-Cheat Defense System
+ * CsuXac Core Security Engine
  * 
- * This system implements zero-tolerance detection for all cheat clients including:
- * - LiquidBounce (packet spoofing, velocity abuse, timer manipulation, phase, fly, scaffold, auto-clicker, reach)
- * - Wurst (velocity bypass, null, reduce, reset)
- * - Impact (all bypass techniques)
- * - Doomsday (advanced exploits)
- * 
- * Features:
- * - Physical reality enforcement
- * - Sub-tick anomaly detection
- * - Packet flow fingerprinting
- * - Dynamic action pattern recognition
- * - Adaptive challenge-response mechanism
- * - Self-evolving defense with SAS
+ * The central orchestrator for the CsuXac anti-cheat system.
+ * Manages all detection modules, enforcement actions, and system monitoring.
  */
 class SecurityEngine(
     private val config: SecurityConfig
@@ -41,211 +25,160 @@ class SecurityEngine(
     private val logger = defaultLogger()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     
-    // Core detection modules
-    private lateinit var movementValidator: MovementValidator
-    private lateinit var packetAnalyzer: PacketFlowAnalyzer
-    private lateinit var physicsSimulator: PhysicsSimulator
-    private lateinit var behaviorAnalyzer: BehaviorPatternAnalyzer
-    private lateinit var velocityEnforcer: VelocityEnforcer
-    private lateinit var challengeManager: ChallengeResponseManager
-    private lateinit var exploitDetector: ExploitSpecificDetector
-    private lateinit var adaptationEngine: SelfEvolvingDefense
+    // Detection modules
+    private val movementValidator = MovementValidator(config.movement)
+    private val packetAnalyzer = PacketFlowAnalyzer(config.packet)
+    private val physicsSimulator = PhysicsSimulator(config.physics)
+    private val behaviorAnalyzer = BehaviorPatternAnalyzer(config.behavior)
+    private val velocityEnforcer = VelocityEnforcer(config.velocity)
+    private val challengeManager = ChallengeResponseManager(config.challenge)
+    private val exploitDetector = ExploitSpecificDetector(config.exploits)
+    private val adaptiveDefense = SelfEvolvingDefense(config.adaptation)
     
     // Enforcement modules
-    private lateinit var violationHandler: ViolationHandler
-    private lateinit var quarantineManager: QuarantineManager
-    private lateinit var rollbackEngine: RollbackEngine
+    private val violationHandler = ViolationHandler(config.enforcement)
+    private val quarantineManager = QuarantineManager(config.quarantine)
+    private val rollbackEngine = RollbackEngine(config.rollback)
     
-    // Monitoring and analytics
-    private lateinit var threatIntelligence: ThreatIntelligence
-    private lateinit var performanceMonitor: PerformanceMonitor
-    private lateinit var anomalyTracker: AnomalyTracker
+    // Monitoring modules
+    private val threatIntelligence = ThreatIntelligence(config.intelligence)
+    private val performanceMonitor = PerformanceMonitor(config.performance)
+    private val anomalyTracker = AnomalyTracker(config.anomaly)
     
-    // Player tracking
-    private val playerSessions = ConcurrentHashMap<String, PlayerSecuritySession>()
+    // Player session tracking
+    private val playerSessions = ConcurrentHashMap<String, Any>()
+    
+    // Violation tracking with atomic counters for thread safety
     private val violationCounts = ConcurrentHashMap<String, AtomicInteger>()
     private val suspicionLevels = ConcurrentHashMap<String, AtomicInteger>()
     
     private var isRunning = false
     
+    /**
+     * Start the Security Engine and all detection modules
+     */
     suspend fun start() {
         if (isRunning) return
         
-        logger.info { "🚀 Starting CsuXac Ultimate Anti-Cheat Defense System..." }
-        logger.info { "🛡️ Zero tolerance policy activated - No bypass accepted" }
+        logger.info { "🚀 Starting CsuXac Core Security Engine..." }
+        
+        // Initialize all modules
+        logger.info { "📋 Initializing detection modules..." }
+        
+        logger.info { "🛡️ Initializing enforcement modules..." }
+        
+        logger.info { "📊 Initializing monitoring modules..." }
+        
+        // Start adaptive defense
+        scope.launch {
+            try {
+                adaptiveDefense.start()
+            } catch (e: Exception) {
+                logger.error(e) { "Failed to start adaptive defense" }
+            }
+        }
         
         isRunning = true
-        
-        try {
-            // Initialize all core modules
-            initializeModules()
-            
-            // Start continuous monitoring
-            startMonitoring()
-            
-            // Start self-evolving defense
-            startAdaptationEngine()
-            
-            logger.info { "✅ CsuXac Core Security Engine fully operational" }
-            logger.info { "🎯 Monitoring ${playerSessions.size} active sessions" }
-            
-        } catch (e: Exception) {
-            logger.error(e) { "❌ Failed to start Security Engine" }
-            throw e
-        }
-    }
-    
-    private suspend fun initializeModules() {
-        logger.info { "🔧 Initializing core detection modules..." }
-        
-        // Core detection
-        movementValidator = MovementValidator(config.movement)
-        packetAnalyzer = PacketFlowAnalyzer(config.packet)
-        physicsSimulator = PhysicsSimulator(config.physics)
-        behaviorAnalyzer = BehaviorPatternAnalyzer(config.behavior)
-        velocityEnforcer = VelocityEnforcer(config.velocity)
-        challengeManager = ChallengeResponseManager(config.challenge)
-        exploitDetector = ExploitSpecificDetector(config.exploits)
-        adaptationEngine = SelfEvolvingDefense(config.adaptation)
-        
-        // Enforcement
-        violationHandler = ViolationHandler(config.enforcement)
-        quarantineManager = QuarantineManager(config.quarantine)
-        rollbackEngine = RollbackEngine(config.rollback)
-        
-        // Monitoring
-        threatIntelligence = ThreatIntelligence(config.intelligence)
-        performanceMonitor = PerformanceMonitor(config.performance)
-        anomalyTracker = AnomalyTracker(config.anomaly)
-        
-        logger.info { "✅ All modules initialized successfully" }
-    }
-    
-    private fun startMonitoring() {
-        scope.launch {
-            while (isRunning) {
-                try {
-                    // Continuous threat monitoring
-                    monitorActiveThreats()
-                    
-                    // Performance optimization
-                    optimizeDetection()
-                    
-                    // Cleanup expired sessions
-                    cleanupExpiredSessions()
-                    
-                    delay(50) // 20 TPS monitoring
-                    
-                } catch (e: Exception) {
-                    logger.error(e) { "Error in monitoring loop" }
-                }
-            }
-        }
-    }
-    
-    private suspend fun startAdaptationEngine() {
-        scope.launch {
-            while (isRunning) {
-                try {
-                    // Update detection models every 2 hours
-                    adaptationEngine.evolveDefense()
-                    delay(2 * 60 * 60 * 1000) // 2 hours
-                    
-                } catch (e: Exception) {
-                    logger.error(e) { "Error in adaptation engine" }
-                }
-            }
-        }
+        logger.info { "✅ CsuXac Core Security Engine started successfully" }
     }
     
     /**
-     * Process player movement for cheat detection
+     * Stop the Security Engine and all modules
+     */
+    suspend fun stop() {
+        if (!isRunning) return
+        
+        logger.info { "🛑 Stopping CsuXac Core Security Engine..." }
+        
+        // Stop adaptive defense
+        adaptiveDefense.stop()
+        
+        // Cancel all coroutines
+        scope.cancel()
+        
+        isRunning = false
+        logger.info { "✅ CsuXac Core Security Engine stopped successfully" }
+    }
+    
+    /**
+     * Process player movement and detect violations
      */
     suspend fun processMovement(
         playerId: String,
         from: Vector3D,
         to: Vector3D,
         timestamp: Long
-    ): MovementValidationResult {
-        val session = getOrCreateSession(playerId)
+    ) {
+        if (!isRunning) return
         
-        return coroutineScope {
-            // Parallel validation for maximum performance
-            val movementCheck = async { movementValidator.validateMovement(from, to, timestamp) }
-            val physicsCheck = async { physicsSimulator.simulateMovement(from, to, session) }
-            val packetCheck = async { packetAnalyzer.analyzeMovementPacket(playerId, from, to, timestamp) }
-            
-            val results = listOf(
-                movementCheck.await(),
-                physicsCheck.await(),
-                packetCheck.await()
-            )
-            
-            // Combine results and determine action
-            val combinedResult = combineValidationResults(results)
-            
-            if (!combinedResult.isValid) {
-                handleViolation(playerId, ViolationType.MOVEMENT_HACK, combinedResult)
+        try {
+            // Validate movement
+            val result = movementValidator.validateMovement(playerId, from, to, timestamp)
+            if (result.isValid) {
+                logger.debug { "Valid movement for $playerId: $from -> $to" }
+                return
             }
             
-            combinedResult
+            // Handle violation
+            handleViolation(playerId, ViolationType.MOVEMENT_VIOLATION, result)
+            
+        } catch (e: Exception) {
+            logger.error(e) { "Error processing movement for $playerId" }
         }
     }
     
     /**
-     * Process player action for behavior analysis
+     * Process player action and detect violations
      */
     suspend fun processAction(
         playerId: String,
         action: PlayerAction,
         timestamp: Long
-    ): ActionValidationResult {
-        val session = getOrCreateSession(playerId)
+    ) {
+        if (!isRunning) return
         
-        return coroutineScope {
-            val behaviorCheck = async { behaviorAnalyzer.analyzeAction(action, session) }
-            val exploitCheck = async { exploitDetector.detectExploit(action, session) }
-            
-            val results = listOf(
-                behaviorCheck.await(),
-                exploitCheck.await()
-            )
-            
-            val combinedResult = combineActionResults(results)
-            
-            if (!combinedResult.isValid) {
-                handleViolation(playerId, ViolationType.BEHAVIOR_HACK, combinedResult)
+        try {
+            // Analyze behavior patterns
+            val result = behaviorAnalyzer.analyzeAction(playerId, action, timestamp)
+            if (result.isValid) {
+                logger.debug { "Valid action for $playerId: ${action.type}" }
+                return
             }
             
-            combinedResult
+            // Handle violation
+            handleViolation(playerId, ViolationType.BEHAVIOR_VIOLATION, result)
+            
+        } catch (e: Exception) {
+            logger.error(e) { "Error processing action for $playerId" }
         }
     }
     
     /**
-     * Process velocity/knockback for consistency enforcement
+     * Process velocity validation
      */
     suspend fun processVelocity(
         playerId: String,
-        expectedVelocity: Vector3D,
-        actualVelocity: Vector3D,
+        expected: Vector3D,
+        actual: Vector3D,
         timestamp: Long
-    ): VelocityValidationResult {
-        val session = getOrCreateSession(playerId)
+    ) {
+        if (!isRunning) return
         
-        val result = velocityEnforcer.validateVelocity(expectedVelocity, actualVelocity, session)
-        
-        if (!result.isValid) {
-            handleViolation(playerId, ViolationType.VELOCITY_HACK, result)
+        try {
+            val result = velocityEnforcer.validateVelocity(playerId, expected, actual, timestamp)
+            if (result.isValid) {
+                return
+            }
             
-            // Immediate rollback for velocity violations
-            rollbackEngine.rollbackPlayer(playerId, timestamp)
+            handleViolation(playerId, ViolationType.VELOCITY_VIOLATION, result)
+            
+        } catch (e: Exception) {
+            logger.error(e) { "Error processing velocity for $playerId" }
         }
-        
-        return result
     }
     
     /**
-     * Handle detected violations with zero tolerance
+     * Handle detected violation with escalating punishment system
      */
     private suspend fun handleViolation(
         playerId: String,
@@ -255,120 +188,51 @@ class SecurityEngine(
         val violationCount = violationCounts.getOrPut(playerId) { AtomicInteger(0) }
         val suspicionLevel = suspicionLevels.getOrPut(playerId) { AtomicInteger(0) }
         
-        // Increase violation count and suspicion level
         violationCount.incrementAndGet()
         suspicionLevel.addAndGet(type.severity)
         
         logger.warn { "🚨 VIOLATION DETECTED: Player $playerId - $type (Level: ${suspicionLevel.get()})" }
         
-        // Immediate enforcement based on violation type
         when {
             suspicionLevel.get() >= 100 -> {
-                // Permanent ban - zero tolerance
                 violationHandler.permanentBan(playerId, type, evidence)
                 logger.error { "💀 PERMANENT BAN: Player $playerId - Multiple violations detected" }
             }
             suspicionLevel.get() >= 50 -> {
-                // Temporary ban
                 violationHandler.temporaryBan(playerId, type, evidence, 24 * 60 * 60 * 1000) // 24 hours
                 logger.warn { "⏰ TEMPORARY BAN: Player $playerId - Suspicious behavior" }
             }
             suspicionLevel.get() >= 25 -> {
-                // Quarantine for investigation
                 quarantineManager.quarantinePlayer(playerId, type, evidence)
                 logger.warn { "🔒 QUARANTINE: Player $playerId - Under investigation" }
             }
             else -> {
-                // Warning and monitoring
                 violationHandler.issueWarning(playerId, type, evidence)
                 logger.info { "⚠️ WARNING: Player $playerId - Minor violation" }
             }
         }
         
-        // Update threat intelligence
         threatIntelligence.recordViolation(playerId, type, evidence)
     }
     
-    private fun getOrCreateSession(playerId: String): PlayerSecuritySession {
-        return playerSessions.getOrPut(playerId) {
-            PlayerSecuritySession(playerId, System.currentTimeMillis())
-        }
+    /**
+     * Get player security session
+     */
+    fun getPlayerSession(playerId: String): Any? {
+        return playerSessions[playerId]
     }
     
-    private fun combineValidationResults(results: List<MovementValidationResult>): MovementValidationResult {
-        // If any validation fails, the entire movement is invalid
-        val isValid = results.all { it.isValid }
-        val violations = results.flatMap { it.violations }
-        val confidence = results.map { it.confidence }.average()
-        
-        return MovementValidationResult(
-            isValid = isValid,
-            violations = violations,
-            confidence = confidence,
-            timestamp = System.currentTimeMillis()
+    /**
+     * Get comprehensive security metrics
+     */
+    suspend fun getSecurityMetrics(): Map<String, Any> {
+        return mapOf(
+            "totalPlayers" to playerSessions.size,
+            "activeViolations" to violationCounts.size,
+            "averageSuspicionLevel" to suspicionLevels.values.map { it.get() }.average(),
+            "isRunning" to isRunning
         )
-    }
-    
-    private fun combineActionResults(results: List<ActionValidationResult>): ActionValidationResult {
-        val isValid = results.all { it.isValid }
-        val violations = results.flatMap { it.violations }
-        val confidence = results.map { it.confidence }.average()
-        
-        return ActionValidationResult(
-            isValid = isValid,
-            violations = violations,
-            confidence = confidence,
-            timestamp = System.currentTimeMillis()
-        )
-    }
-    
-    private suspend fun monitorActiveThreats() {
-        val activeThreats = threatIntelligence.getActiveThreats()
-        if (activeThreats.isNotEmpty()) {
-            logger.warn { "🚨 Active threats detected: ${activeThreats.size}" }
-        }
-    }
-    
-    private suspend fun optimizeDetection() {
-        performanceMonitor.optimizeDetectionAlgorithms()
-    }
-    
-    private suspend fun cleanupExpiredSessions() {
-        val now = System.currentTimeMillis()
-        val expiredSessions = playerSessions.entries.filter { 
-            now - it.value.lastActivity > 30 * 60 * 1000 // 30 minutes
-        }
-        
-        expiredSessions.forEach { (playerId, _) ->
-            playerSessions.remove(playerId)
-            violationCounts.remove(playerId)
-            suspicionLevels.remove(playerId)
-        }
-        
-        if (expiredSessions.isNotEmpty()) {
-            logger.info { "🧹 Cleaned up ${expiredSessions.size} expired sessions" }
-        }
-    }
-    
-    fun stop() {
-        if (!isRunning) return
-        
-        logger.info { "🛑 Stopping CsuXac Security Engine..." }
-        isRunning = false
-        
-        // Cleanup resources
-        playerSessions.clear()
-        violationCounts.clear()
-        suspicionLevels.clear()
-        
-        logger.info { "✅ CsuXac Security Engine stopped" }
     }
     
     fun isRunning(): Boolean = isRunning
-    
-    fun getPlayerCount(): Int = playerSessions.size
-    
-    fun getViolationCount(playerId: String): Int = violationCounts[playerId]?.get() ?: 0
-    
-    fun getSuspicionLevel(playerId: String): Int = suspicionLevels[playerId]?.get() ?: 0
 }

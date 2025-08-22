@@ -5,84 +5,56 @@ import com.csuxac.core.SecurityEngine
 import com.csuxac.core.cluster.ClusterManager
 import com.csuxac.core.monitoring.MonitoringDashboard
 import com.csuxac.util.logging.defaultLogger
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlin.system.exitProcess
 
+/**
+ * CsuXac Core Enforcement Directive - Main Application
+ */
 class CsuXacApplication {
     private val logger = defaultLogger()
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val config = CsuXacConfig.load()
     
-    private lateinit var config: CsuXacConfig
-    private lateinit var securityEngine: SecurityEngine
-    private lateinit var clusterManager: ClusterManager
-    private lateinit var monitoringDashboard: MonitoringDashboard
+    private val securityEngine = SecurityEngine(config.security)
+    private val clusterManager = ClusterManager(config.cluster)
+    private val monitoringDashboard = MonitoringDashboard(config.monitoring)
     
     suspend fun start() {
+        logger.info { "🚀 Starting CsuXac Core Enforcement Directive..." }
+        
         try {
-            logger.info { "Starting CsuXac Ultimate Minecraft Anti-Cheat Infrastructure..." }
-            
-            // Initialize configuration
-            config = CsuXacConfig.load()
-            logger.info { "Configuration loaded successfully" }
-            
-            // Initialize core components
-            securityEngine = SecurityEngine(config.security)
-            clusterManager = ClusterManager(config.cluster)
-            monitoringDashboard = MonitoringDashboard(config.monitoring)
-            
-            // Start components
             securityEngine.start()
             clusterManager.start()
             monitoringDashboard.start()
             
-            logger.info { "CsuXac started successfully" }
-            
+            logger.info { "✅ CsuXac Core fully operational" }
         } catch (e: Exception) {
-            logger.error(e) { "Failed to start CsuXac" }
+            logger.error(e) { "❌ Failed to start CsuXac Core" }
             throw e
         }
     }
     
-    suspend fun shutdown() {
-        try {
-            logger.info { "Shutting down CsuXac..." }
-            
-            monitoringDashboard.stop()
-            clusterManager.stop()
-            securityEngine.stop()
-            
-            logger.info { "CsuXac shut down successfully" }
-            
-        } catch (e: Exception) {
-            logger.error(e) { "Error during shutdown" }
-        }
+    suspend fun stop() {
+        logger.info { "🛑 Shutting down CsuXac Core..." }
+        
+        securityEngine.stop()
+        clusterManager.stop()
+        monitoringDashboard.stop()
+        
+        logger.info { "✅ CsuXac Core shutdown complete" }
     }
 }
 
-fun main(args: Array<String>) = runBlocking {
+suspend fun main() {
     val app = CsuXacApplication()
-    
-    // Register shutdown hook
-    Runtime.getRuntime().addShutdownHook(Thread {
-        runBlocking {
-            app.shutdown()
-        }
-    })
     
     try {
         app.start()
         
-        // Keep the application running
+        // Keep running
         while (true) {
             kotlinx.coroutines.delay(1000)
         }
-        
     } catch (e: Exception) {
-        defaultLogger().error(e) { "Application failed" }
-        exitProcess(1)
+        defaultLogger().error(e) { "Fatal error in CsuXac Core" }
+        app.stop()
     }
 }

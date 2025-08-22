@@ -1,9 +1,5 @@
 package com.csuxac.config
 
-import com.sksamuel.hoplite.ConfigLoader
-import com.sksamuel.hoplite.addSource
-import com.sksamuel.hoplite.yaml.YamlSource
-
 /**
  * Main security configuration for CsuXac Core
  */
@@ -25,11 +21,7 @@ data class SecurityConfig(
 ) {
     companion object {
         fun load(): SecurityConfig {
-            return ConfigLoader.Builder()
-                .addSource(YamlSource("config/security.yml"))
-                .addSource(YamlSource("config/security-default.yml"))
-                .build()
-                .loadConfigOrThrow<SecurityConfig>()
+            return SecurityConfig()
         }
     }
 }
