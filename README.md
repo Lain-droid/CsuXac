@@ -1,6 +1,7 @@
-# CsuXac Core Enforcement Directive
+# CsuXac Core Enforcement Directive v1.0.2
 
 **Ultimate Minecraft Anti-Cheat System with Zero-Tolerance Policy**
+> *Paper Plugin for Minecraft 1.21.4+ with Enhanced Physics Enforcement*
 
 ## 🛡️ Overview
 

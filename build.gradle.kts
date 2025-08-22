@@ -5,13 +5,13 @@ plugins {
 }
 
 group = "com.csuxac"
-version = "1.0.0"
+version = "1.0.2"
 
 
 
 dependencies {
     // Paper API
-    compileOnly("io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
     
     // Core Kotlin
     implementation("org.jetbrains.kotlin:kotlin-stdlib")

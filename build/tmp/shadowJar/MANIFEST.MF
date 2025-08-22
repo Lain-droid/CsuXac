@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Plugin-Class: com.csuxac.SimpleCsuXacPlugin
+Plugin-Version: 1.0.2
+Plugin-Name: CsuXac Core
+Plugin-Description: Ultimate Anti-Cheat System with Zero-Tolerance Polic
+ y
+Plugin-Author: CsuXac Security Team
+Plugin-Website: https://csuxac.dev
+Plugin-API-Version: 1.21
+
