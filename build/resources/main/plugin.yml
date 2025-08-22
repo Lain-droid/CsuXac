@@ -1,6 +1,6 @@
 name: CsuXac Core
 version: 1.0.0
-main: com.csuxac.CsuXacPlugin
+main: com.csuxac.SimpleCsuXacPlugin
 api-version: '1.21'
 authors: [CsuXac Security Team]
 description: Ultimate Anti-Cheat System with Zero-Tolerance Policy
