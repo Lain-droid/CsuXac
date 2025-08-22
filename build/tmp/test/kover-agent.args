@@ -1,0 +1,8 @@
+/workspace/build/kover/bin-reports/test.ic
+false
+false
+true
+false
+-exclude
+android\..*
+com\.android\..*
