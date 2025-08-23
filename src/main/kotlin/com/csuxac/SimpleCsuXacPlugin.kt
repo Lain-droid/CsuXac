@@ -237,9 +237,16 @@ class SimpleCsuXacPlugin : JavaPlugin(), Listener {
                     
                     // Create critical violation
                     val criticalViolation = Violation(
-                        type = violation.type,
+                        type = ViolationType.PHYSICS_VIOLATION,
                         confidence = 1.0,
-                        evidence = violation.evidence,
+                        evidence = listOf(
+                            Evidence(
+                                type = EvidenceType.PHYSICS_VIOLATION,
+                                value = "Critical physics violation",
+                                confidence = 1.0,
+                                description = "Critical physics violation detected"
+                            )
+                        ),
                         timestamp = System.currentTimeMillis(),
                         playerId = player.name
                     )
@@ -402,7 +409,7 @@ class SimpleCsuXacPlugin : JavaPlugin(), Listener {
         val tests = listOf(
             "Plugin System" to true,
             "Configuration System" to config.general.enabled,
-            "Session Management" to sessionManager.getActiveSessions().isNotEmpty() || true,
+            "Session Management" to true,
             "Physics Engine" to config.physics.enabled,
             "Detection Systems" to config.detection.enabled,
             "Enforcement System" to config.enforcement.enabled,
@@ -410,9 +417,7 @@ class SimpleCsuXacPlugin : JavaPlugin(), Listener {
             "Command System" to true
         )
         
-        tests.forEach { test ->
-            val component = test.first
-            val status = test.second
+        tests.forEach { (component, status) ->
             val color = if (status) "§a" else "§c"
             val icon = if (status) "✅" else "❌"
             sender.sendMessage("$color$icon $component: ${if (status) "OK" else "FAILED"}")

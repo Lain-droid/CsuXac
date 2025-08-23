@@ -599,7 +599,7 @@ class AdvancedPhysicsEngine {
         return confidence.coerceIn(0.0, 1.0)
     }
     
-    private fun checkQuantumCoherence(player: String, from: Vector3D, to: Vector3D, velocity: Vector3D, timestamp: Long): QuantumCoherenceResult {
+    private suspend fun checkQuantumCoherence(player: String, from: Vector3D, to: Vector3D, velocity: Vector3D, timestamp: Long): QuantumCoherenceResult {
         return validateQuantumPhysics(player, from, to, velocity, timestamp)
     }
     

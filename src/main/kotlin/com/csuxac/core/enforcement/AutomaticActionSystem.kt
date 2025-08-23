@@ -18,7 +18,7 @@ class AutomaticActionSystem(
 ) {
     
     private val playerViolationCounts = ConcurrentHashMap<String, AtomicInteger>()
-    private val playerActionHistory = ConcurrentHashMap<String, MutableList<EnforcementAction>>()
+    private val playerActionHistory = ConcurrentHashMap<String, MutableList<EnforcementActionRecord>>()
     private val quarantinedPlayers = ConcurrentHashMap<String, QuarantineInfo>()
     
     /**
@@ -33,7 +33,7 @@ class AutomaticActionSystem(
         logViolation(player, violation, currentCount)
         
         // Determine action based on violation severity and count
-        val action = determineAction(violation.severity, currentCount)
+        val action = determineAction(violation.type.severity, currentCount)
         
         // Execute action
         val result = executeAction(player, action, violation)
@@ -52,14 +52,14 @@ class AutomaticActionSystem(
     /**
      * Determine appropriate action based on violation severity and count
      */
-    private fun determineAction(severity: ViolationSeverity, count: Int): EnforcementAction {
+    private fun determineAction(severity: Int, count: Int): EnforcementAction {
         return when {
-            severity == ViolationSeverity.CRITICAL -> EnforcementAction.BAN
-            severity == ViolationSeverity.HIGH && count >= 3 -> EnforcementAction.KICK
-            severity == ViolationSeverity.HIGH -> EnforcementAction.WARNING
-            severity == ViolationSeverity.MEDIUM && count >= 5 -> EnforcementAction.KICK
-            severity == ViolationSeverity.MEDIUM -> EnforcementAction.WARNING
-            severity == ViolationSeverity.LOW && count >= 10 -> EnforcementAction.WARNING
+            severity >= 40 -> EnforcementAction.BAN
+            severity >= 25 && count >= 3 -> EnforcementAction.KICK
+            severity >= 25 -> EnforcementAction.WARNING
+            severity >= 15 && count >= 5 -> EnforcementAction.KICK
+            severity >= 15 -> EnforcementAction.WARNING
+            severity >= 10 && count >= 10 -> EnforcementAction.WARNING
             else -> EnforcementAction.NOTIFY
         }
     }
@@ -92,7 +92,7 @@ class AutomaticActionSystem(
         
         try {
             // Ban the player
-            val banReason = "CsuXac Anti-Cheat: ${violation.type} (Severity: ${violation.severity})"
+            val banReason = "CsuXac Anti-Cheat: ${violation.type} (Severity: ${violation.type.severity})"
             player.banPlayer(banReason)
             
             // Notify admins
@@ -131,7 +131,7 @@ class AutomaticActionSystem(
         
         try {
             // Kick the player
-            val kickReason = "§c§lCsuXac Anti-Cheat\n§eViolation: ${violation.type}\n§cSeverity: ${violation.severity}"
+            val kickReason = "§c§lCsuXac Anti-Cheat\n§eViolation: ${violation.type}\n§cSeverity: ${violation.type.severity}"
             player.kickPlayer(kickReason)
             
             // Notify admins
@@ -170,9 +170,9 @@ class AutomaticActionSystem(
         
         try {
             // Send warning message
-            val warningMessage = when (violation.severity) {
-                ViolationSeverity.HIGH -> "§c⚠️ Suspicious activity detected! This may result in action."
-                ViolationSeverity.MEDIUM -> "§e⚠️ Unusual activity detected. Please check your connection."
+            val warningMessage = when {
+                violation.type.severity >= 25 -> "§c⚠️ Suspicious activity detected! This may result in action."
+                violation.type.severity >= 15 -> "§e⚠️ Unusual activity detected. Please check your connection."
                 else -> "§6⚠️ Minor violation detected."
             }
             
@@ -355,7 +355,7 @@ class AutomaticActionSystem(
         if (config.violationLogging) {
             plugin.logger.warning(
                 "VIOLATION: ${player.name} (${player.uniqueId}) - " +
-                "Type: ${violation.type}, Severity: ${violation.severity}, Count: $count"
+                "Type: ${violation.type}, Severity: ${violation.type.severity}, Count: $count"
             )
         }
     }
@@ -368,7 +368,7 @@ class AutomaticActionSystem(
             if (onlinePlayer.hasPermission("csuxac.admin")) {
                 onlinePlayer.sendMessage(
                     "§6§l[CsuXac] §e$action ${player.name}: " +
-                    "${violation.type} (${violation.severity})"
+                    "${violation.type} (${violation.type.severity})"
                 )
             }
         }
@@ -407,8 +407,11 @@ class AutomaticActionSystem(
         val currentTime = System.currentTimeMillis()
         
         // Cleanup old quarantines
-        quarantinedPlayers.entries.removeIf { (_, info) ->
+        val expiredQuarantines = quarantinedPlayers.filter { (_, info) ->
             currentTime - info.startTime > info.duration
+        }
+        expiredQuarantines.forEach { (playerId, _) ->
+            quarantinedPlayers.remove(playerId)
         }
         
         // Cleanup old action history

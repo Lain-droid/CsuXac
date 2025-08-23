@@ -1,5 +1,5 @@
 name: CsuXacCore
-version: 1.0.3
+version: 1.0.4-COMPLETE
 main: com.csuxac.SimpleCsuXacPlugin
 api-version: '1.21'
 authors: [CsuXac Security Team]

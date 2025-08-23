@@ -36,8 +36,16 @@ data class PlayerSession(
     
     // Anti-cheat specific data
     val physicsState: AdvancedPhysicsState = AdvancedPhysicsState(),
-    val behaviorProfile: BehaviorProfile = BehaviorProfile(),
-    val realityState: RealityState = RealityState(),
+    val behaviorProfile: BehaviorProfile = BehaviorProfile(
+        playerId = playerId,
+        movementEntropy = 0.0,
+        mouseEntropy = 0.0,
+        timingVariance = 0.0,
+        actionFrequencyDistribution = mutableMapOf(),
+        totalSamples = 0,
+        createdAt = System.currentTimeMillis(),
+        lastUpdate = System.currentTimeMillis()
+    ),
     
     // Timestamps for analysis
     val movementHistory: MutableList<MovementRecord> = mutableListOf(),
@@ -86,7 +94,7 @@ data class PlayerSession(
         
         // Update suspicion score
         val currentScore = averageSuspicionScore.get()
-        val newScore = (currentScore + violation.severity.ordinal) / 2
+        val newScore = (currentScore + violation.type.severity.toLong()) / 2
         averageSuspicionScore.set(newScore)
         
         // Check for quarantine threshold
@@ -139,7 +147,7 @@ data class PlayerSession(
             suspiciousMovements = suspiciousMovements.get(),
             totalViolations = totalViolations.get(),
             currentViolations = violationCount.get(),
-            averageSuspicionScore = averageSuspicionScore.get(),
+            averageSuspicionScore = averageSuspicionScore.get().toDouble(),
             suspicionLevel = getSuspicionLevel(),
             isQuarantined = isQuarantined,
             quarantineDuration = if (isQuarantined) System.currentTimeMillis() - quarantineStartTime else 0L
@@ -200,7 +208,7 @@ data class SessionStats(
     val suspiciousMovements: Long,
     val totalViolations: Long,
     val currentViolations: Long,
-    val averageSuspicionScore: Long,
+    val averageSuspicionScore: Double,
     val suspicionLevel: SuspicionLevel,
     val isQuarantined: Boolean,
     val quarantineDuration: Long
@@ -310,7 +318,7 @@ class PlayerSessionManager {
             totalPlayers = activeSessions.size,
             quarantinedPlayers = quarantinedPlayers.size,
             totalViolations = activeSessions.sumOf { it.totalViolations.get() },
-            averageSuspicionScore = activeSessions.map { it.averageSuspicionScore.get() }.average(),
+            averageSuspicionScore = if (activeSessions.isNotEmpty()) activeSessions.map { it.averageSuspicionScore.get().toDouble() }.average() else 0.0,
             totalMovements = activeSessions.sumOf { it.totalMovements.get() }
         )
     }

@@ -169,12 +169,14 @@ data class FluidSimulation(
             FluidType.AIR -> 1.225
             FluidType.WATER -> 1000.0
             FluidType.LAVA -> 3100.0
+            FluidType.VOID -> 0.0
         }
         
         val newFluidViscosity = when (newFluidType) {
             FluidType.AIR -> 1.81e-5
             FluidType.WATER -> 1.0e-3
             FluidType.LAVA -> 1.0e-2
+            FluidType.VOID -> 0.0
         }
         
         // Calculate fluid resistance
