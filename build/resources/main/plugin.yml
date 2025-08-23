@@ -1,4 +1,4 @@
-name: CsuXac Core
+name: CsuXacCore
 version: 1.0.3
 main: com.csuxac.SimpleCsuXacPlugin
 api-version: '1.21'

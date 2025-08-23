@@ -1,0 +1,291 @@
+# CsuXac Core Anti-Cheat Configuration
+# Ultimate Enforcement Directive v5.0 Configuration
+
+# ========================================
+# GENERAL SETTINGS
+# ========================================
+general:
+  # Enable/disable the entire anti-cheat system
+  enabled: true
+  
+  # Enable debug mode for detailed logging
+  debug-mode: false
+  
+  # Automatically update the plugin
+  auto-update: true
+  
+  # Language for messages (en, tr, de, fr, es, etc.)
+  language: "en"
+  
+  # Maximum number of players to track simultaneously
+  max-players: 1000
+  
+  # Session timeout in milliseconds (5 minutes)
+  session-timeout: 300000
+
+# ========================================
+# PHYSICS ENGINE SETTINGS
+# ========================================
+physics:
+  # Enable advanced physics engine
+  enabled: true
+  
+  # Quantum precision for calculations (1e-15 = quantum level)
+  quantum-precision: 1.0E-15
+  
+  # Maximum allowed velocity
+  max-velocity: 50.0
+  
+  # Gravity constant (9.81 m/s²)
+  gravity-constant: 9.81
+  
+  # Enable fluid dynamics simulation
+  fluid-simulation: true
+  
+  # Enable advanced collision detection
+  collision-detection: true
+  
+  # Enable temporal physics analysis
+  temporal-analysis: true
+  
+  # Enable adaptive thresholds based on player behavior
+  adaptive-thresholds: true
+
+# ========================================
+# DETECTION SYSTEM SETTINGS
+# ========================================
+detection:
+  # Enable all detection systems
+  enabled: true
+  
+  # Reality Fork Detection (RFD) - Detects client-server reality discrepancies
+  reality-fork-detection: true
+  
+  # Causal Chain Validation (CCV) - Validates action causality
+  causal-chain-validation: true
+  
+  # Neural Behavior Cloning (NBC) - AI-powered behavior analysis
+  neural-behavior-cloning: true
+  
+  # Quantum-Temporal Packet Analysis (QTPA) - 4D spacetime packet analysis
+  quantum-temporal-analysis: true
+  
+  # Movement validation and speed detection
+  movement-validation: true
+  
+  # Specific exploit detection
+  exploit-detection: true
+  
+  # Detection sensitivity (0.0 = very strict, 1.0 = very lenient)
+  sensitivity: 0.8
+  
+  # False positive threshold
+  false-positive-threshold: 0.1
+
+# ========================================
+# ENFORCEMENT SETTINGS
+# ========================================
+enforcement:
+  # Enable enforcement actions
+  enabled: true
+  
+  # Automatically kick players for violations
+  auto-kick: false
+  
+  # Automatically ban players for violations
+  auto-ban: false
+  
+  # Enable player quarantine system
+  quarantine-enabled: true
+  
+  # Number of violations before quarantine
+  quarantine-threshold: 5
+  
+  # Quarantine duration in milliseconds (5 minutes)
+  quarantine-duration: 300000
+  
+  # Send warning messages to players
+  warning-messages: true
+  
+  # Log all violations
+  violation-logging: true
+
+# ========================================
+# LOGGING SETTINGS
+# ========================================
+logging:
+  # Enable logging system
+  enabled: true
+  
+  # Log level (DEBUG, INFO, WARNING, ERROR)
+  log-level: "INFO"
+  
+  # Log all violations
+  log-violations: true
+  
+  # Log player movements (can be verbose)
+  log-movements: false
+  
+  # Log physics calculations
+  log-physics: false
+  
+  # Log to file
+  log-to-file: true
+  
+  # Log to console
+  log-to-console: true
+  
+  # Maximum log file size in bytes (10MB)
+  max-log-size: 10485760
+
+# ========================================
+# PERFORMANCE SETTINGS
+# ========================================
+performance:
+  # Maximum physics calculations per tick
+  max-physics-calculations: 1000
+  
+  # Maximum session history entries per player
+  max-session-history: 1000
+  
+  # Cleanup interval in milliseconds (1 minute)
+  cleanup-interval: 60000
+  
+  # Maximum memory usage in bytes (512MB)
+  max-memory-usage: 536870912
+  
+  # Enable asynchronous processing
+  async-processing: true
+  
+  # Enable batch processing for better performance
+  batch-processing: true
+
+# ========================================
+# ADVANCED SETTINGS
+# ========================================
+advanced:
+  # Enable quantum entanglement detection
+  quantum-entanglement: true
+  
+  # Enable multi-dimensional physics
+  multi-dimensional-physics: true
+  
+  # Enable temporal causality validation
+  temporal-causality: true
+  
+  # Enable adaptive learning system
+  adaptive-learning: true
+  
+  # Enable threat intelligence
+  threat-intelligence: true
+  
+  # Enable self-evolving defense
+  self-evolving-defense: true
+
+# ========================================
+# THRESHOLDS AND LIMITS
+# ========================================
+thresholds:
+  # Maximum allowed speed multiplier
+  max-speed-multiplier: 1.5
+  
+  # Maximum allowed fly height
+  max-fly-height: 256
+  
+  # Maximum allowed teleport distance
+  max-teleport-distance: 1000
+  
+  # Maximum allowed packet rate
+  max-packet-rate: 100
+  
+  # Maximum allowed action rate
+  max-action-rate: 50
+  
+  # Minimum allowed entropy for packets
+  min-packet-entropy: 0.3
+
+# ========================================
+# WHITELIST AND BYPASS
+# ========================================
+whitelist:
+  # Enable whitelist system
+  enabled: false
+  
+  # Players who bypass all checks
+  players: []
+  
+  # Permission nodes that bypass checks
+  permissions: ["csuxac.bypass"]
+  
+  # OPs bypass all checks
+  ops-bypass: true
+
+# ========================================
+# INTEGRATION SETTINGS
+# ========================================
+integrations:
+  # Vault integration for economy
+  vault: true
+  
+  # PlaceholderAPI integration
+  placeholderapi: false
+  
+  # WorldEdit integration
+  worldedit: false
+  
+  # WorldGuard integration
+  worldguard: false
+  
+  # LuckPerms integration
+  luckperms: false
+
+# ========================================
+# MESSAGES AND LOCALIZATION
+# ========================================
+messages:
+  # Prefix for all messages
+  prefix: "&6&l[CsuXac] &r"
+  
+  # Language file to use
+  language-file: "messages.yml"
+  
+  # Enable color codes in messages
+  enable-colors: true
+  
+  # Enable emojis in messages
+  enable-emojis: true
+
+# ========================================
+# UPDATES AND MAINTENANCE
+# ========================================
+updates:
+  # Check for updates
+  check-updates: true
+  
+  # Auto-download updates
+  auto-download: false
+  
+  # Update channel (RELEASE, BETA, ALPHA)
+  channel: "RELEASE"
+  
+  # Notify admins of updates
+  notify-admins: true
+
+# ========================================
+# SECURITY SETTINGS
+# ========================================
+security:
+  # Enable encryption for sensitive data
+  encryption: true
+  
+  # Enable secure communication
+  secure-communication: true
+  
+  # Enable anti-tampering protection
+  anti-tampering: true
+  
+  # Enable integrity checks
+  integrity-checks: true
+  
+  # Enable secure logging
+  secure-logging: false

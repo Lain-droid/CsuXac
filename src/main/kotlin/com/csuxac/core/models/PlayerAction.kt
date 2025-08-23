@@ -123,7 +123,8 @@ enum class ViolationType(val severity: Int, val description: String) {
     LOW_ENTROPY_ANOMALY(35, "Low entropy + high performance - potential cheat"),
     QUANTUM_VIOLATION(50, "Quantum uncertainty principle violation"),
     CAUSALITY_VIOLATION(45, "Causality violation - effect before cause"),
-    PERFORMANCE_ANOMALY(30, "Impossible performance characteristics")
+    PERFORMANCE_ANOMALY(30, "Impossible performance characteristics"),
+    PHYSICS_VIOLATION(35, "Physics engine violation detected")
 }
 
 data class Evidence(

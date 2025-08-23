@@ -159,8 +159,8 @@ data class FluidSimulation(
     ) {
         // Update fluid type based on environment
         val newFluidType = when {
-            environment.inFluid -> FluidType.WATER
-            environment.onGround -> FluidType.AIR
+            environment.isInFluid -> FluidType.WATER
+            environment.isOnGround -> FluidType.AIR
             else -> FluidType.AIR
         }
         

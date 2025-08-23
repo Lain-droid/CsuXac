@@ -1,6 +1,7 @@
 package com.csuxac.core.physics
 
 import com.csuxac.core.models.*
+import com.csuxac.core.models.EnvironmentState
 import kotlin.math.*
 import kotlinx.coroutines.*
 import java.util.concurrent.ConcurrentHashMap
@@ -94,42 +95,44 @@ class AdvancedPhysicsEngine {
                 )
             }
             
-            if (!quantumCoherence.isValid) {
-                violations.add(
-                    PhysicsViolation(
-                        type = PhysicsViolationType.QUANTUM_VIOLATION,
-                        severity = ViolationSeverity.CRITICAL,
-                        evidence = mapOf(
-                            "coherence" to quantumCoherence.toString(),
-                            "quantum_state" to quantumStates[player]?.toString() ?: "null"
-                        ),
-                        timestamp = timestamp
-                    )
+                    if (!quantumCoherence.isValid) {
+            violations.add(
+                PhysicsViolation(
+                    type = PhysicsViolationType.QUANTUM_VIOLATION,
+                    severity = ViolationSeverity.CRITICAL,
+                    evidence = mapOf(
+                        "coherence" to quantumCoherence.toString(),
+                        "quantum_state" to quantumStates[player]?.toString() ?: "null"
+                    ),
+                    timestamp = timestamp,
+                    confidence = 1.0,
+                    mitigation = null
                 )
-            }
-            
-            // Update physics state
-            updateAdvancedPhysicsState(player, physicsState, to, velocity, environment, timestamp)
-            
-            val calculationTime = System.nanoTime() - startTime
-            updatePerformanceMetrics(calculationTime)
-            
-            if (violations.isNotEmpty()) {
-                physicsViolations.incrementAndGet()
-            }
-            
-            AdvancedPhysicsValidationResult(
-                isValid = violations.isEmpty(),
-                violations = violations,
-                predictedPosition = predictedPosition,
-                positionDeviation = positionDeviation,
-                quantumCoherence = quantumCoherence,
-                fluidDynamics = fluidValidation,
-                collisionAnalysis = collisionValidation,
-                temporalAnalysis = temporalValidation,
-                calculationTime = calculationTime,
-                confidence = calculateConfidence(physicsState, violations)
             )
+        }
+            
+                    // Update physics state
+        updateAdvancedPhysicsState(player, physicsState, to, velocity, environment, timestamp)
+        
+        val calculationTime = System.nanoTime() - startTime
+        updatePerformanceMetrics(calculationTime)
+        
+        if (violations.isNotEmpty()) {
+            physicsViolations.incrementAndGet()
+        }
+        
+        return AdvancedPhysicsValidationResult(
+            isValid = violations.isEmpty(),
+            violations = violations,
+            predictedPosition = predictedPosition,
+            positionDeviation = positionDeviation,
+            quantumCoherence = quantumCoherence,
+            fluidDynamics = fluidValidation,
+            collisionAnalysis = collisionValidation,
+            temporalAnalysis = temporalValidation,
+            calculationTime = calculationTime,
+            confidence = calculateConfidence(physicsState, violations)
+        )
             
         } catch (e: Exception) {
             AdvancedPhysicsValidationResult(
@@ -173,15 +176,15 @@ class AdvancedPhysicsEngine {
         val entanglementAnalysis = analyzeQuantumEntanglement(player, timestamp)
         
         // Update quantum state
-        quantumState.updateState(from, to, velocity, timestamp)
+        quantumState.updateState(from, velocity, timestamp)
         quantumStates[player] = quantumState
         
         return QuantumCoherenceResult(
-            isValid = causalityCheck && entanglementAnalysis.isValid,
+            isValid = causalityCheck && entanglementAnalysis.isEntangled,
             positionUncertainty = positionUncertainty,
             velocitySuperposition = velocitySuperposition,
             causalityValid = causalityCheck,
-            entanglementValid = entanglementAnalysis.isValid,
+            entanglementValid = entanglementAnalysis.isEntangled,
             quantumState = quantumState
         )
     }
@@ -328,7 +331,7 @@ class AdvancedPhysicsEngine {
      */
     private fun predictNewtonianPosition(from: Vector3D, velocity: Vector3D, environment: EnvironmentState): Vector3D {
         val deltaTime = 1.0 / PHYSICS_TICK_RATE
-        val gravity = if (environment.onGround) 0.0 else -GRAVITY_CONSTANT
+        val gravity = if (environment.isOnGround) 0.0 else -GRAVITY_CONSTANT
         
         return Vector3D(
             x = from.x + velocity.x * deltaTime,
@@ -422,7 +425,7 @@ class AdvancedPhysicsEngine {
     }
     
     private fun calculateFluidResistance(velocity: Vector3D, environment: EnvironmentState): Vector3D {
-        if (!environment.inFluid) return Vector3D.ZERO
+        if (!environment.isInFluid) return Vector3D.ZERO
         
         val velocityMagnitude = velocity.magnitude()
         val resistanceCoefficient = 0.5
@@ -436,7 +439,7 @@ class AdvancedPhysicsEngine {
     }
     
     private fun calculateBuoyancy(from: Vector3D, to: Vector3D, environment: EnvironmentState): Vector3D {
-        if (!environment.inFluid) return Vector3D.ZERO
+        if (!environment.isInFluid) return Vector3D.ZERO
         
         val fluidDensity = 1000.0 // Water density
         val volume = 1.0 // Player volume approximation
@@ -446,7 +449,7 @@ class AdvancedPhysicsEngine {
     }
     
     private fun calculateViscosityEffect(velocity: Vector3D, environment: EnvironmentState): Vector3D {
-        if (!environment.inFluid) return Vector3D.ZERO
+        if (!environment.isInFluid) return Vector3D.ZERO
         
         return Vector3D(
             x = -velocity.x * FLUID_VISCOSITY,
@@ -456,7 +459,7 @@ class AdvancedPhysicsEngine {
     }
     
     private fun calculatePressureEffect(from: Vector3D, to: Vector3D, environment: EnvironmentState): Vector3D {
-        if (!environment.inFluid) return Vector3D.ZERO
+        if (!environment.isInFluid) return Vector3D.ZERO
         
         val depth = from.y - to.y
         val pressureGradient = 1000.0 // Pressure gradient in fluid
@@ -475,7 +478,7 @@ class AdvancedPhysicsEngine {
     }
     
     private fun detectFluidCollisions(from: Vector3D, to: Vector3D, velocity: Vector3D, environment: EnvironmentState): List<FluidCollision> {
-        if (!environment.inFluid) return emptyList()
+        if (!environment.isInFluid) return emptyList()
         
         return listOf(
             FluidCollision(
@@ -560,8 +563,8 @@ class AdvancedPhysicsEngine {
         var baseThreshold = 0.1
         
         // Adjust based on environment
-        if (environment.inFluid) baseThreshold *= 1.5
-        if (environment.onGround) baseThreshold *= 0.8
+        if (environment.isInFluid) baseThreshold *= 1.5
+        if (environment.isOnGround) baseThreshold *= 0.8
         
         // Adjust based on physics state
         baseThreshold *= (1.0 + physicsState.consistencyScore * 0.2)
