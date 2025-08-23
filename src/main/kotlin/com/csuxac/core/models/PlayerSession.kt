@@ -21,7 +21,7 @@ data class PlayerSession(
     // Violation tracking
     val violations: MutableList<Violation> = mutableListOf(),
     val violationCount: AtomicInteger = AtomicInteger(0),
-    val totalViolations: AtomicInteger = AtomicInteger(0),
+    val totalViolations: AtomicLong = AtomicLong(0),
     
     // Performance metrics
     val totalMovements: AtomicLong = AtomicLong(0),

@@ -56,7 +56,7 @@ class AdvancedPhysicsEngine {
         val startTime = System.nanoTime()
         totalCalculations.incrementAndGet()
         
-        try {
+        return@withContext try {
             // Get or create advanced physics state
             val physicsState = getOrCreateAdvancedPhysicsState(player)
             
@@ -121,7 +121,7 @@ class AdvancedPhysicsEngine {
             physicsViolations.incrementAndGet()
         }
         
-        return AdvancedPhysicsValidationResult(
+        AdvancedPhysicsValidationResult(
             isValid = violations.isEmpty(),
             violations = violations,
             predictedPosition = predictedPosition,
@@ -134,7 +134,7 @@ class AdvancedPhysicsEngine {
             confidence = calculateConfidence(physicsState, violations)
         )
     } catch (e: Exception) {
-        return AdvancedPhysicsValidationResult(
+        AdvancedPhysicsValidationResult(
                 isValid = false,
                 violations = listOf(
                     PhysicsViolation(
@@ -144,6 +144,48 @@ class AdvancedPhysicsEngine {
                         timestamp = timestamp
                     )
                 ),
+                predictedPosition = from,
+                positionDeviation = 0.0,
+                quantumCoherence = QuantumCoherenceResult(
+                    isValid = false,
+                    positionUncertainty = 0.0,
+                    velocitySuperposition = Vector3D.ZERO,
+                    causalityValid = false,
+                    entanglementValid = false,
+                    quantumState = QuantumPhysicsState()
+                ),
+                fluidDynamics = FluidDynamicsResult(
+                    fluidResistance = Vector3D.ZERO,
+                    buoyancy = Vector3D.ZERO,
+                    viscosityEffect = Vector3D.ZERO,
+                    pressureEffect = Vector3D.ZERO,
+                    totalFluidEffect = Vector3D.ZERO
+                ),
+                collisionAnalysis = AdvancedCollisionResult(
+                    blockCollisions = emptyList(),
+                    entityCollisions = emptyList(),
+                    fluidCollisions = emptyList(),
+                    boundaryCollisions = emptyList(),
+                    collisionResponse = CollisionResponse(
+                        finalVelocity = Vector3D.ZERO,
+                        finalPosition = Vector3D.ZERO,
+                        collisionCount = 0
+                    ),
+                    totalCollisions = 0
+                ),
+                temporalAnalysis = TemporalPhysicsResult(
+                    temporalVelocity = TemporalVelocityResult(
+                        averageVelocity = Vector3D.ZERO,
+                        velocityVariance = Vector3D.ZERO,
+                        accelerationTrend = Vector3D.ZERO
+                    ),
+                    accelerationConsistency = true,
+                    timeDilation = 1.0,
+                    causalityPreserved = true,
+                    temporalAnomalies = emptyList()
+                ),
+                calculationTime = System.nanoTime() - startTime,
+                confidence = 0.0,
                 error = e.message
             )
         }

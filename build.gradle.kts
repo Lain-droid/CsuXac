@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.csuxac"
-version = "1.0.4-COMPLETE"
+version = "1.0.5-FINAL"
 
 
 
