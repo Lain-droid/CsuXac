@@ -25,11 +25,22 @@ class SimpleCsuXacPlugin : JavaPlugin(), Listener {
             // Register events
             server.pluginManager.registerEvents(this, this)
             
+            // Register commands
+            getCommand("csuxac")?.setExecutor(this)
+            getCommand("csuxacreload")?.setExecutor(this)
+            getCommand("csuxacstatus")?.setExecutor(this)
+            
+            // Log successful startup
             logger.info("✅ CsuXac Core enabled successfully for ${server.name}")
             logger.info("🛡️ Zero-tolerance anti-cheat system activated")
+            logger.info("📋 Commands registered: /csuxac, /csuxacreload, /csuxacstatus")
+            
+            // Send startup message to console
+            server.consoleSender.sendMessage("§6§l[CsuXac] §aPlugin successfully enabled!")
             
         } catch (e: Exception) {
             logger.severe("❌ Failed to enable CsuXac Core: ${e.message}")
+            e.printStackTrace()
             server.pluginManager.disablePlugin(this)
         }
     }
