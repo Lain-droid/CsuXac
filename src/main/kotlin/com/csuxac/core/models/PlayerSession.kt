@@ -146,7 +146,7 @@ data class PlayerSession(
             totalMovements = totalMovements.get(),
             suspiciousMovements = suspiciousMovements.get(),
             totalViolations = totalViolations.get(),
-            currentViolations = violationCount.get(),
+            currentViolations = violationCount.get().toLong(),
             averageSuspicionScore = averageSuspicionScore.get().toDouble(),
             suspicionLevel = getSuspicionLevel(),
             isQuarantined = isQuarantined,

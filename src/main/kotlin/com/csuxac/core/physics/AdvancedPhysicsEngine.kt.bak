@@ -110,8 +110,8 @@ class AdvancedPhysicsEngine {
                 )
             )
         }
-            
-                    // Update physics state
+        
+        // Update physics state
         updateAdvancedPhysicsState(player, physicsState, to, velocity, environment, timestamp)
         
         val calculationTime = System.nanoTime() - startTime
@@ -133,9 +133,8 @@ class AdvancedPhysicsEngine {
             calculationTime = calculationTime,
             confidence = calculateConfidence(physicsState, violations)
         )
-            
-        } catch (e: Exception) {
-            AdvancedPhysicsValidationResult(
+    } catch (e: Exception) {
+        return AdvancedPhysicsValidationResult(
                 isValid = false,
                 violations = listOf(
                     PhysicsViolation(
@@ -671,7 +670,7 @@ class AdvancedPhysicsEngine {
         }
         
         quantumStates.entries.removeIf { (_, state) ->
-            currentTime - state.lastUpdate > maxAge
+            currentTime - state.lastMeasurement > maxAge
         }
     }
 }

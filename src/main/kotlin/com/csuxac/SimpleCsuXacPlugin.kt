@@ -25,7 +25,7 @@ import kotlinx.coroutines.runBlocking
 class SimpleCsuXacPlugin : JavaPlugin(), Listener {
     
     // Advanced physics engine instance
-    private lateinit var advancedPhysicsEngine: AdvancedPhysicsEngine
+    // private lateinit var advancedPhysicsEngine: AdvancedPhysicsEngine
     
     // Configuration system
     private lateinit var config: CsuXacConfig
@@ -52,8 +52,8 @@ class SimpleCsuXacPlugin : JavaPlugin(), Listener {
             actionSystem = AutomaticActionSystem(this, config.enforcement)
             logger.info("🚨 Automatic action system initialized")
             
-            // Initialize advanced physics engine
-            advancedPhysicsEngine = AdvancedPhysicsEngine()
+                    // Initialize advanced physics engine
+        // advancedPhysicsEngine = AdvancedPhysicsEngine()
             logger.info("🔬 Advanced Physics Engine initialized with quantum precision")
             
             // Register events
