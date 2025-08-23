@@ -9,6 +9,9 @@ import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
+import com.csuxac.core.physics.AdvancedPhysicsEngine
+import com.csuxac.core.models.*
+import kotlinx.coroutines.runBlocking
 
 /**
  * CsuXac Core Enforcement Directive - Simple Paper Plugin
@@ -18,10 +21,17 @@ import org.bukkit.entity.Player
  */
 class SimpleCsuXacPlugin : JavaPlugin(), Listener {
     
+    // Advanced physics engine instance
+    private lateinit var advancedPhysicsEngine: AdvancedPhysicsEngine
+    
     override fun onEnable() {
         logger.info("🚀 Enabling CsuXac Core Enforcement Directive...")
         
         try {
+            // Initialize advanced physics engine
+            advancedPhysicsEngine = AdvancedPhysicsEngine()
+            logger.info("🔬 Advanced Physics Engine initialized with quantum precision")
+            
             // Register events
             server.pluginManager.registerEvents(this, this)
             
@@ -33,10 +43,12 @@ class SimpleCsuXacPlugin : JavaPlugin(), Listener {
             // Log successful startup
             logger.info("✅ CsuXac Core enabled successfully for ${server.name}")
             logger.info("🛡️ Zero-tolerance anti-cheat system activated")
+            logger.info("🔬 Advanced physics engine with quantum precision activated")
             logger.info("📋 Commands registered: /csuxac, /csuxacreload, /csuxacstatus")
             
             // Send startup message to console
             server.consoleSender.sendMessage("§6§l[CsuXac] §aPlugin successfully enabled!")
+            server.consoleSender.sendMessage("§6§l[CsuXac] §bAdvanced Physics Engine: §aACTIVE")
             
         } catch (e: Exception) {
             logger.severe("❌ Failed to enable CsuXac Core: ${e.message}")
@@ -76,12 +88,76 @@ class SimpleCsuXacPlugin : JavaPlugin(), Listener {
         
         if (from == to) return // No actual movement
         
-        // TODO: Process movement for anti-cheat detection
-        // This will include:
-        // - Speed detection
-        // - Fly detection  
-        // - Phase detection
-        // - Scaffold detection
+        // Advanced physics validation with quantum precision
+        runBlocking {
+            try {
+                val fromVector = Vector3D(from.x, from.y, from.z)
+                val toVector = Vector3D(to.x, to.y, to.z)
+                val velocity = Vector3D(
+                    to.x - from.x,
+                    to.y - from.y,
+                    to.z - from.z
+                )
+                
+                val environment = EnvironmentState(
+                    onGround = player.isOnGround,
+                    inFluid = player.isInWater || player.isInLava,
+                    inVehicle = player.isInsideVehicle,
+                    flying = player.isFlying,
+                    sprinting = player.isSprinting,
+                    sneaking = player.isSneaking
+                )
+                
+                val timestamp = System.currentTimeMillis()
+                
+                // Use advanced physics engine for validation
+                val physicsResult = advancedPhysicsEngine.validateAdvancedPhysics(
+                    player.name,
+                    fromVector,
+                    toVector,
+                    velocity,
+                    environment,
+                    timestamp
+                )
+                
+                if (!physicsResult.isValid) {
+                    // Handle physics violations
+                    handlePhysicsViolations(player, physicsResult)
+                }
+                
+                // Log movement for analysis
+                logger.fine("Player ${player.name} moved: ${fromVector} -> ${toVector}, Valid: ${physicsResult.isValid}")
+                
+            } catch (e: Exception) {
+                logger.warning("Error processing player movement for ${player.name}: ${e.message}")
+            }
+        }
+    }
+    
+    private fun handlePhysicsViolations(player: Player, result: AdvancedPhysicsValidationResult) {
+        result.violations.forEach { violation ->
+            when (violation.severity) {
+                ViolationSeverity.LOW -> {
+                    logger.info("Low severity physics violation for ${player.name}: ${violation.type}")
+                }
+                ViolationSeverity.MEDIUM -> {
+                    logger.warning("Medium severity physics violation for ${player.name}: ${violation.type}")
+                    // Send warning to player
+                    player.sendMessage("§e⚠️ Unusual movement detected. Please check your connection.")
+                }
+                ViolationSeverity.HIGH -> {
+                    logger.warning("High severity physics violation for ${player.name}: ${violation.type}")
+                    // Send stronger warning
+                    player.sendMessage("§c⚠️ Suspicious movement detected. This may result in action.")
+                }
+                ViolationSeverity.CRITICAL -> {
+                    logger.severe("CRITICAL physics violation for ${player.name}: ${violation.type}")
+                    // Take immediate action
+                    player.sendMessage("§4🚨 Critical physics violation detected!")
+                    // TODO: Implement automatic action (kick, ban, etc.)
+                }
+            }
+        }
     }
     
     // Command Handlers
@@ -106,6 +182,7 @@ class SimpleCsuXacPlugin : JavaPlugin(), Listener {
             sender.sendMessage("§e/csuxac reload §7- Reload configuration")
             sender.sendMessage("§e/csuxac status §7- Check system status")
             sender.sendMessage("§e/csuxac stats §7- View statistics")
+            sender.sendMessage("§e/csuxac physics §7- View physics engine stats")
             sender.sendMessage("§e/csuxac test §7- Run system tests")
             return true
         }
@@ -114,6 +191,7 @@ class SimpleCsuXacPlugin : JavaPlugin(), Listener {
             "reload" -> handleReloadCommand(sender)
             "status" -> handleStatusCommand(sender)
             "stats" -> handleStatsCommand(sender)
+            "physics" -> handlePhysicsCommand(sender)
             "test" -> handleTestCommand(sender)
             else -> {
                 sender.sendMessage("§c❌ Unknown subcommand: ${args[0]}")
