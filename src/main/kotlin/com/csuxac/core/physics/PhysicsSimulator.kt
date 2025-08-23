@@ -201,7 +201,7 @@ class PhysicsSimulator(
         
         // Air resistance
         if (velocity.magnitude() > 0.01) {
-            val resistance = -velocity.normalize() * velocity.magnitude().pow(2) * 0.01
+            val resistance = -velocity.normalize() * velocity.magnitude().pow(2.0) * 0.01
             acceleration = acceleration + resistance
         }
         

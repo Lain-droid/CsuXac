@@ -99,7 +99,6 @@ class PhysicalLawEnforcement(
                 confidence = confidence,
                 simulatedPosition = simulatedPosition,
                 actualPosition = to,
-                discrepancy = discrepancy,
                 timestamp = System.currentTimeMillis()
             )
             
@@ -115,7 +114,6 @@ class PhysicalLawEnforcement(
                 confidence = 0.0,
                 simulatedPosition = from,
                 actualPosition = to,
-                discrepancy = 0.0,
                 timestamp = System.currentTimeMillis()
             )
         }
@@ -143,7 +141,7 @@ class PhysicalLawEnforcement(
         
         // Apply air resistance
         if (velocity.magnitude() > 0.01) {
-            val resistance = velocity.normalize() * -velocity.magnitude().pow(2) * 0.01
+            val resistance = velocity.normalize() * -velocity.magnitude().pow(2.0) * 0.01
             acceleration = acceleration + resistance
         }
         
@@ -170,7 +168,7 @@ class PhysicalLawEnforcement(
         }
         
         // Enforce speed limits based on movement type
-        val horizontalSpeed = sqrt(velocity.x.pow(2) + velocity.z.pow(2))
+        val horizontalSpeed = sqrt(velocity.x.pow(2.0) + velocity.z.pow(2.0))
         val maxSpeed = when {
             environment.isFlying -> MAX_FLY_SPEED
             environment.isSprinting -> MAX_SPRINT_SPEED
@@ -223,7 +221,7 @@ class PhysicalLawEnforcement(
             val maxVerticalMovement = if (environment.isOnGround) {
                 JUMP_VELOCITY * (deltaTime / TICK_TIME) + STEP_HEIGHT
             } else {
-                abs(GRAVITY) * (deltaTime / TICK_TIME).pow(2) + abs(state.velocity.y) * (deltaTime / TICK_TIME)
+                abs(GRAVITY) * (deltaTime / TICK_TIME.toDouble()).pow(2.0) + abs(state.velocity.y) * (deltaTime / TICK_TIME)
             }
             
             if (verticalMovement > maxVerticalMovement * 1.2) { // 20% tolerance
@@ -424,15 +422,4 @@ data class EnvironmentState(
     val fluidLevel: Float = 0f
 )
 
-/**
- * Physics validation result
- */
-data class PhysicsValidationResult(
-    val isValid: Boolean,
-    val violations: List<Violation>,
-    val confidence: Double,
-    val simulatedPosition: Vector3D,
-    val actualPosition: Vector3D,
-    val discrepancy: Double,
-    val timestamp: Long
-)
+// PhysicsValidationResult is defined in models package

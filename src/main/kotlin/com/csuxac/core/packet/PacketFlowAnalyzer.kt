@@ -305,7 +305,7 @@ class PacketFlowAnalyzer(
         if (recentPackets.isEmpty()) return null
         
         val avgSize = recentPackets.map { it.estimatedSize }.average()
-        val variance = recentPackets.map { (it.estimatedSize - avgSize).pow(2) }.average()
+        val variance = recentPackets.map { (it.estimatedSize - avgSize).pow(2.0) }.average()
         val stdDev = sqrt(variance)
         
         // Check for unusually consistent packet sizes (bot-like behavior)
@@ -417,7 +417,7 @@ class PacketFlowAnalyzer(
         }
         
         val avgInterval = intervals.average()
-        return intervals.map { (it - avgInterval).pow(2) }.average()
+        return intervals.map { (it - avgInterval).pow(2.0) }.average()
     }
     
     private fun extractCommonPatterns(packets: List<PacketRecord>): List<String> {

@@ -282,7 +282,7 @@ class MovementValidator(
     private fun detectScaffoldHack(from: Vector3D, to: Vector3D, timestamp: Long): Violation? {
         // Check for scaffold-like movement patterns
         val yDelta = to.y - from.y
-        val horizontalDistance = sqrt((to.x - from.x).pow(2) + (to.z - from.z).pow(2))
+        val horizontalDistance = sqrt((to.x - from.x).pow(2.0) + (to.z - from.z).pow(2.0))
         
         // Scaffold typically involves moving horizontally while falling
         if (yDelta < -0.1 && horizontalDistance > 0.5) {
@@ -380,7 +380,7 @@ class MovementValidator(
     
     private fun determineMovementType(from: Vector3D, to: Vector3D, speed: Double): MovementType {
         val yDelta = to.y - from.y
-        val horizontalDistance = sqrt((to.x - from.x).pow(2) + (to.z - from.z).pow(2))
+        val horizontalDistance = sqrt((to.x - from.x).pow(2.0) + (to.z - from.z).pow(2.0))
         
         return when {
             yDelta > 0.1 -> MovementType.JUMP

@@ -3,6 +3,7 @@ package com.csuxac.core.detection
 import com.csuxac.config.MovementConfig
 import com.csuxac.core.models.*
 import com.csuxac.core.physics.PhysicalLawEnforcement
+import com.csuxac.core.physics.EnvironmentState
 import com.csuxac.util.logging.defaultLogger
 import kotlin.math.*
 import java.util.concurrent.ConcurrentHashMap
@@ -146,7 +147,7 @@ class SubTickMovementReconstructor(
             
             // Apply friction in sub-tick increments
             if (environment.isOnGround) {
-                val frictionFactor = PhysicalLawEnforcement.GROUND_FRICTION.pow(1.0 / SUB_TICKS_PER_TICK)
+                val frictionFactor = PhysicalLawEnforcement.GROUND_FRICTION.pow(1.0 / SUB_TICKS_PER_TICK.toDouble())
                 currentVelocity = currentVelocity.copy(
                     x = currentVelocity.x * frictionFactor,
                     z = currentVelocity.z * frictionFactor
@@ -154,7 +155,7 @@ class SubTickMovementReconstructor(
             }
             
             // Apply air resistance in sub-tick increments
-            val airResistanceFactor = PhysicalLawEnforcement.AIR_RESISTANCE.pow(1.0 / SUB_TICKS_PER_TICK)
+            val airResistanceFactor = PhysicalLawEnforcement.AIR_RESISTANCE.pow(1.0 / SUB_TICKS_PER_TICK.toDouble())
             currentVelocity = currentVelocity * airResistanceFactor
             
             // Update position
@@ -309,7 +310,7 @@ class SubTickMovementReconstructor(
         }
         
         val avgVelocity = velocities.average()
-        val variance = velocities.map { (it - avgVelocity).pow(2) }.average()
+        val variance = velocities.map { (it - avgVelocity).pow(2.0) }.average()
         return sqrt(variance)
     }
     

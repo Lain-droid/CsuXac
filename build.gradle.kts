@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.csuxac"
-version = "1.0.2"
+version = "1.0.3"
 
 
 
@@ -51,7 +51,7 @@ tasks.shadowJar {
     
     // Exclude Paper API from shadow JAR
     dependencies {
-        exclude(dependency("io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT"))
+        exclude(dependency("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT"))
     }
 }
 
