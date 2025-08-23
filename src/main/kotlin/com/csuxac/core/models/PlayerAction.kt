@@ -53,7 +53,16 @@ enum class ActionType(val category: ActionCategory, val riskLevel: RiskLevel) {
     SCAFFOLD(ActionCategory.SPECIAL, RiskLevel.CRITICAL),
     KILL_AURA(ActionCategory.SPECIAL, RiskLevel.CRITICAL),
     TIMER_HACK(ActionCategory.SPECIAL, RiskLevel.CRITICAL),
-    VELOCITY_BYPASS(ActionCategory.SPECIAL, RiskLevel.CRITICAL)
+    VELOCITY_BYPASS(ActionCategory.SPECIAL, RiskLevel.CRITICAL),
+    
+    // Additional action types
+    UNKNOWN(ActionCategory.SPECIAL, RiskLevel.LOW),
+    ITEM_PICKUP(ActionCategory.INVENTORY, RiskLevel.LOW),
+    CRAFTING(ActionCategory.INVENTORY, RiskLevel.LOW),
+    DAMAGE_DEALT(ActionCategory.COMBAT, RiskLevel.MEDIUM),
+    DEATH(ActionCategory.SPECIAL, RiskLevel.HIGH),
+    BLOCK_PLACE(ActionCategory.BLOCK, RiskLevel.MEDIUM),
+    TELEPORT(ActionCategory.MOVEMENT, RiskLevel.MEDIUM)
 }
 
 enum class ActionCategory {
@@ -104,7 +113,17 @@ enum class ViolationType(val severity: Int, val description: String) {
     BEHAVIOR_HACK(15, "Suspicious behavior pattern"),
     COLLISION_HACK(25, "Collision box violation"),
     INVENTORY_HACK(20, "Inventory manipulation"),
-    CHAT_SPAM(10, "Chat spam detected")
+    CHAT_SPAM(10, "Chat spam detected"),
+    
+    // Ultimate Enforcement Directive v5.0 - New Violation Types
+    REALITY_FORK(50, "Reality fork detected - client-server universe divergence"),
+    CAUSAL_VIOLATION(45, "Causal chain violation - impossible action sequence"),
+    BEHAVIOR_ANOMALY(40, "Neural behavior anomaly - biological profile disruption"),
+    TEMPORAL_ANOMALY(45, "Temporal manipulation exploit detected"),
+    LOW_ENTROPY_ANOMALY(35, "Low entropy + high performance - potential cheat"),
+    QUANTUM_VIOLATION(50, "Quantum uncertainty principle violation"),
+    CAUSALITY_VIOLATION(45, "Causality violation - effect before cause"),
+    PERFORMANCE_ANOMALY(30, "Impossible performance characteristics")
 }
 
 data class Evidence(
@@ -122,5 +141,15 @@ enum class EvidenceType {
     PHYSICS_VIOLATION,
     PACKET_ANOMALY,
     BEHAVIOR_ANOMALY,
-    STATISTICAL_ANOMALY
+    STATISTICAL_ANOMALY,
+    
+    // Ultimate Enforcement Directive v5.0 - New Evidence Types
+    REALITY_DIVERGENCE,
+    CAUSAL_ANOMALY,
+    TEMPORAL_ANOMALY,
+    ENTROPY_ANOMALY,
+    QUANTUM_ANOMALY,
+    CAUSALITY_VIOLATION,
+    PERFORMANCE_ANOMALY,
+    NEURAL_ANOMALY
 }
