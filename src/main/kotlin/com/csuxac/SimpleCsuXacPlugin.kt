@@ -117,19 +117,44 @@ class SimpleCsuXacPlugin : JavaPlugin(), Listener {
 
         // Run the check asynchronously to avoid blocking the main thread
         GlobalScope.launch(Dispatchers.Default) {
-            val result = movementValidator.checkSpeed(player, from, to)
-            if (!result.isValid) {
-                // Punishment and logging should be done on the main thread
-                server.scheduler.runTask(this@SimpleCsuXacPlugin, Runnable {
-                    logger.warning("Speed violation by ${player.name}: ${result.reason}")
-                    player.sendMessage("§c[CsuXac] Speed violation detected: ${result.reason}")
+            // Speed Check
+            val speedResult = movementValidator.checkSpeed(player, from, to)
+            if (!speedResult.isValid) {
+                handleViolation(player, ViolationType.SPEED_HACK, speedResult.reason ?: "Unknown reason")
+                return@launch // Don't run other checks if this one failed
+            }
 
-                    // Here you would typically add a violation to the session manager
-                    // and let the action system decide on the punishment.
-                    // For now, we'll just send a message.
-                })
+            // Fly Check
+            if (!player.allowFlight && player.gameMode != org.bukkit.GameMode.CREATIVE && player.gameMode != org.bukkit.GameMode.SPECTATOR) {
+                val flyResult = movementValidator.checkFly(player, to)
+                if (!flyResult.isValid) {
+                    handleViolation(player, ViolationType.FLY_HACK, flyResult.reason ?: "Unknown reason")
+                }
             }
         }
+    }
+
+    private fun handleViolation(player: Player, type: ViolationType, reason: String) {
+        server.scheduler.runTask(this, Runnable {
+            val session = sessionManager.getOrCreateSession(player.name, player.name, player.uniqueId.toString())
+            val violation = Violation(
+                type = type,
+                confidence = 0.9, // Confidence can be improved later
+                evidence = listOf(
+                    Evidence(
+                        type = EvidenceType.PHYSICS_VIOLATION,
+                        value = reason,
+                        confidence = 0.9,
+                        description = "Player movement triggered a violation"
+                    )
+                ),
+                timestamp = System.currentTimeMillis(),
+                playerId = player.name
+            )
+
+            session.addViolation(violation)
+            actionSystem.processViolation(player, violation)
+        })
     }
 
     override fun onDisable() {

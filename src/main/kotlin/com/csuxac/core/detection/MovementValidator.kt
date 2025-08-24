@@ -2,11 +2,23 @@ package com.csuxac.core.detection
 
 import org.bukkit.entity.Player
 import org.bukkit.Location
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
+
+/**
+ * Data class to store movement-related state for a player.
+ */
+data class PlayerMoveData(
+    var inAirTicks: Int = 0,
+    var lastYPosition: Double = 0.0
+)
 
 /**
  * Handles movement-related cheat detection, starting with a simple speed check.
  */
 class MovementValidator {
+
+    private val playerData = ConcurrentHashMap<UUID, PlayerMoveData>()
 
     companion object {
         // These are approximations. Fine-tuning will be needed.
@@ -49,6 +61,37 @@ class MovementValidator {
         // We can add a vertical speed check later if needed.
 
         return ValidationResult(isValid = true)
+    }
+
+    fun checkFly(player: Player, to: Location): ValidationResult {
+        val data = playerData.getOrPut(player.uniqueId) { PlayerMoveData() }
+        val onGround = isPlayerOnGround(player)
+
+        if (onGround) {
+            data.inAirTicks = 0
+        } else {
+            data.inAirTicks++
+        }
+
+        // Basic hover check
+        if (data.inAirTicks > 20 && to.y >= data.lastYPosition) {
+            return ValidationResult(
+                isValid = false,
+                reason = "Player hovering for ${data.inAirTicks} ticks."
+            )
+        }
+
+        // Update last position
+        data.lastYPosition = to.y
+
+        return ValidationResult(isValid = true)
+    }
+
+    private fun isPlayerOnGround(player: Player): Boolean {
+        // Check a small area below the player for solid blocks.
+        // This is a simple check and can be improved.
+        val playerLocation = player.location
+        return playerLocation.subtract(0.0, 0.1, 0.0).block.type.isSolid
     }
 }
 
