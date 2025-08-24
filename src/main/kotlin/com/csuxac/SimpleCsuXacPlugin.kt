@@ -14,6 +14,7 @@ import com.csuxac.core.config.CsuXacConfig
 import com.csuxac.core.detection.MovementValidator
 import com.csuxac.core.enforcement.AutomaticActionSystem
 import com.csuxac.core.models.PlayerSessionManager
+import com.csuxac.core.packet.PacketFlowAnalyzer
 import com.csuxac.core.packet.PacketListener
 import com.comphenix.protocol.ProtocolLibrary
 import kotlinx.coroutines.GlobalScope
@@ -40,6 +41,9 @@ class SimpleCsuXacPlugin : JavaPlugin(), Listener {
     // Movement validator
     private lateinit var movementValidator: MovementValidator
 
+    // Packet flow analyzer
+    private lateinit var packetFlowAnalyzer: PacketFlowAnalyzer
+
     override fun onEnable() {
         logger.info("🚀 Enabling CsuXac Core Enforcement Directive...")
         
@@ -59,6 +63,10 @@ class SimpleCsuXacPlugin : JavaPlugin(), Listener {
             // Initialize movement validator
             movementValidator = MovementValidator()
             logger.info("✅ Movement validator initialized")
+
+            // Initialize packet flow analyzer
+            packetFlowAnalyzer = PacketFlowAnalyzer(this, sessionManager, actionSystem)
+            logger.info("✅ Packet flow analyzer initialized")
             
             // Register events
             server.pluginManager.registerEvents(this, this)
@@ -70,7 +78,7 @@ class SimpleCsuXacPlugin : JavaPlugin(), Listener {
             
             // Register packet listener
             if (server.pluginManager.getPlugin("ProtocolLib") != null) {
-                ProtocolLibrary.getProtocolManager().addPacketListener(PacketListener(this))
+                ProtocolLibrary.getProtocolManager().addPacketListener(PacketListener(this, packetFlowAnalyzer))
                 logger.info("✅ ProtocolLib found, packet listener registered.")
             } else {
                 logger.warning("⚠️ ProtocolLib not found, packet analysis will be disabled.")

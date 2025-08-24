@@ -5,7 +5,10 @@ import com.comphenix.protocol.events.PacketAdapter
 import com.comphenix.protocol.events.PacketEvent
 import org.bukkit.plugin.Plugin
 
-class PacketListener(plugin: Plugin) : PacketAdapter(
+class PacketListener(
+    plugin: Plugin,
+    private val packetFlowAnalyzer: PacketFlowAnalyzer
+) : PacketAdapter(
     plugin,
     PacketType.Play.Client.POSITION,
     PacketType.Play.Client.POSITION_LOOK,
@@ -15,6 +18,6 @@ class PacketListener(plugin: Plugin) : PacketAdapter(
 
     override fun onPacketReceiving(event: PacketEvent) {
         // Pass the packet event to the analyzer
-        PacketFlowAnalyzer.analyzePacket(event)
+        packetFlowAnalyzer.analyzePacket(event)
     }
 }

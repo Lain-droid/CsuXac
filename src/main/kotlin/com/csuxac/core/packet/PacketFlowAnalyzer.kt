@@ -1,5 +1,7 @@
 package com.csuxac.core.packet
 
+import com.csuxac.core.enforcement.AutomaticActionSystem
+import com.csuxac.core.models.PlayerSessionManager
 import com.csuxac.core.models.*
 import com.csuxac.util.logging.defaultLogger
 import kotlinx.coroutines.CoroutineScope
@@ -23,7 +25,11 @@ import kotlin.math.min
  * - Anomalous packet timing
  * - Client fingerprint mismatches
  */
-object PacketFlowAnalyzer {
+class PacketFlowAnalyzer(
+    private val plugin: org.bukkit.plugin.Plugin,
+    private val sessionManager: PlayerSessionManager,
+    private val actionSystem: AutomaticActionSystem
+) {
     private val logger = defaultLogger()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     
@@ -98,13 +104,6 @@ object PacketFlowAnalyzer {
                 confidence *= 0.6
             }
             
-            // 2. Check for timing anomalies
-            val timingViolation = detectTimingAnomalies(player.name, tracker)
-            if (timingViolation != null) {
-                violations.add(timingViolation)
-                confidence *= 0.7
-            }
-            
             // 3. Detect packet compression
             val compressionViolation = detectPacketCompression(player.name, tracker)
             if (compressionViolation != null) {
@@ -137,10 +136,15 @@ object PacketFlowAnalyzer {
             updateAnomalyScore(player.name, violations.size)
             
             if (violations.isNotEmpty()) {
-                logger.warn { "Packet violations for ${player.name}: ${violations.joinToString { it.type.name }}" }
-                // Here, we would normally pass these violations to the enforcement system.
+                // Get the player's session and process each violation
+                plugin.server.scheduler.runTask(plugin, Runnable {
+                    val session = sessionManager.getOrCreateSession(player.name, player.name, player.uniqueId.toString())
+                    violations.forEach { violation ->
+                        session.addViolation(violation)
+                        actionSystem.processViolation(player, violation)
+                    }
+                })
             }
-
         }
     }
     
@@ -289,25 +293,23 @@ object PacketFlowAnalyzer {
     }
     
     private fun detectSubTickPacketAnomalies(playerId: String, tracker: PacketFlowTracker): Violation? {
-        val recentPackets = tracker.getRecentPackets(100)
-        if (recentPackets.size < 2) return null
-        
-        // Check for packets sent between server ticks
-        val tickViolations = recentPackets.zipWithNext().count { (prev, next) ->
-            val timeDelta = next.timestamp - prev.timestamp
-            timeDelta < 45 // Less than 45ms between packets (20 TPS = 50ms)
-        }
-        
-        if (tickViolations > recentPackets.size * 0.3) { // More than 30% violations
+        val recentPackets = tracker.getRecentPackets(1000) // Get packets from the last second
+        val packetCount = recentPackets.size
+
+        // A legitimate client sends about 20 packets per second.
+        // We allow a buffer for network jitter and other anomalies.
+        val threshold = 30
+
+        if (packetCount > threshold) {
             return Violation(
                 type = ViolationType.TIMER_HACK,
                 confidence = 0.9,
                 evidence = listOf(
                     Evidence(
                         type = EvidenceType.TIMING_ANOMALY,
-                        value = "Sub-tick violations: $tickViolations/${recentPackets.size}",
+                        value = "Packet count: $packetCount/s",
                         confidence = 0.9,
-                        description = "Multiple sub-tick packet anomalies detected"
+                        description = "Exceeded packet threshold of $threshold/s."
                     )
                 ),
                 timestamp = System.currentTimeMillis(),
