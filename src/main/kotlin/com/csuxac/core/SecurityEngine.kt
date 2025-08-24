@@ -27,7 +27,7 @@ class SecurityEngine(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     
     // Detection modules
-    private val movementValidator = MovementValidator(config.movement)
+    private val movementValidator = MovementValidator()
     private val packetAnalyzer = PacketFlowAnalyzer(config.packet)
     private val physicsSimulator = PhysicsSimulator(config.physics)
     private val behaviorAnalyzer = BehaviorPatternAnalyzer(config.behavior)
@@ -257,7 +257,7 @@ class SecurityEngine(
      * Process player movement and detect violations
      */
     suspend fun processMovement(
-        playerId: String,
+        player: org.bukkit.entity.Player,
         from: Vector3D,
         to: Vector3D,
         timestamp: Long
@@ -266,17 +266,19 @@ class SecurityEngine(
         
         try {
             // Validate movement
-            val result = movementValidator.validateMovement(from, to, timestamp)
+            val fromLocation = org.bukkit.Location(null, from.x, from.y, from.z)
+            val toLocation = org.bukkit.Location(null, to.x, to.y, to.z)
+            val result = movementValidator.checkSpeed(player, fromLocation, toLocation)
             if (result.isValid) {
-                logger.debug { "Valid movement for $playerId: $from -> $to" }
+                logger.debug { "Valid movement for ${player.name}: $from -> $to" }
                 return
             }
             
             // Handle violation
-            handleViolation(playerId,                     ViolationType.MOVEMENT_HACK, result)
+            handleViolation(player.name, ViolationType.MOVEMENT_HACK, result)
             
         } catch (e: Exception) {
-            logger.error(e) { "Error processing movement for $playerId" }
+            logger.error(e) { "Error processing movement for ${player.name}" }
         }
     }
     

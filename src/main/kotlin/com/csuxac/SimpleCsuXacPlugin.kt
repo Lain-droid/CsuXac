@@ -9,15 +9,14 @@ import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import com.csuxac.core.physics.AdvancedPhysicsEngine
 import com.csuxac.core.models.*
 import com.csuxac.core.config.CsuXacConfig
+import com.csuxac.core.detection.MovementValidator
 import com.csuxac.core.enforcement.AutomaticActionSystem
 import com.csuxac.core.models.PlayerSessionManager
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 
 /**
  * CsuXac Core Enforcement Directive - Simple Paper Plugin
@@ -26,9 +25,6 @@ import kotlinx.coroutines.runBlocking
  * Supports Minecraft 1.21+
  */
 class SimpleCsuXacPlugin : JavaPlugin(), Listener {
-    
-    // Advanced physics engine instance
-    private lateinit var advancedPhysicsEngine: AdvancedPhysicsEngine
     
     // Configuration system
     private lateinit var config: CsuXacConfig
@@ -39,6 +35,9 @@ class SimpleCsuXacPlugin : JavaPlugin(), Listener {
     // Automatic action system
     private lateinit var actionSystem: AutomaticActionSystem
     
+    // Movement validator
+    private lateinit var movementValidator: MovementValidator
+
     override fun onEnable() {
         logger.info("🚀 Enabling CsuXac Core Enforcement Directive...")
         
@@ -55,9 +54,9 @@ class SimpleCsuXacPlugin : JavaPlugin(), Listener {
             actionSystem = AutomaticActionSystem(this, config.enforcement)
             logger.info("🚨 Automatic action system initialized")
             
-            // Initialize advanced physics engine
-            advancedPhysicsEngine = AdvancedPhysicsEngine()
-            logger.info("🔬 Advanced Physics Engine initialized with quantum precision")
+            // Initialize movement validator
+            movementValidator = MovementValidator()
+            logger.info("✅ Movement validator initialized")
             
             // Register events
             server.pluginManager.registerEvents(this, this)
@@ -73,7 +72,6 @@ class SimpleCsuXacPlugin : JavaPlugin(), Listener {
             logger.info("⚙️ Configuration system: ACTIVE")
             logger.info("👥 Session management: ACTIVE")
             logger.info("🚨 Enforcement system: ACTIVE")
-            logger.info("🔬 Advanced physics engine with quantum precision activated")
             logger.info("📋 Commands registered: /csuxac, /csuxacreload, /csuxacstatus")
             
             // Send startup message to console
@@ -81,7 +79,6 @@ class SimpleCsuXacPlugin : JavaPlugin(), Listener {
             server.consoleSender.sendMessage("§6§l[CsuXac] §bConfiguration System: §aACTIVE")
             server.consoleSender.sendMessage("§6§l[CsuXac] §bSession Management: §aACTIVE")
             server.consoleSender.sendMessage("§6§l[CsuXac] §bEnforcement System: §aACTIVE")
-            server.consoleSender.sendMessage("§6§l[CsuXac] §bAdvanced Physics Engine: §aACTIVE")
             
         } catch (e: Exception) {
             logger.severe("❌ Failed to enable CsuXac Core: ${e.message}")
@@ -90,6 +87,33 @@ class SimpleCsuXacPlugin : JavaPlugin(), Listener {
         }
     }
     
+    @EventHandler
+    fun onPlayerMove(event: PlayerMoveEvent) {
+        val player = event.player
+        val from = event.from
+        val to = event.to
+
+        if (to == null || from.distanceSquared(to) == 0.0) {
+            return // No actual movement
+        }
+
+        // Run the check asynchronously to avoid blocking the main thread
+        GlobalScope.launch(Dispatchers.Default) {
+            val result = movementValidator.checkSpeed(player, from, to)
+            if (!result.isValid) {
+                // Punishment and logging should be done on the main thread
+                server.scheduler.runTask(this@SimpleCsuXacPlugin, Runnable {
+                    logger.warning("Speed violation by ${player.name}: ${result.reason}")
+                    player.sendMessage("§c[CsuXac] Speed violation detected: ${result.reason}")
+
+                    // Here you would typically add a violation to the session manager
+                    // and let the action system decide on the punishment.
+                    // For now, we'll just send a message.
+                })
+            }
+        }
+    }
+
     override fun onDisable() {
         logger.info("🛑 Disabling CsuXac Core...")
         logger.info("✅ CsuXac Core disabled successfully")
@@ -130,142 +154,6 @@ class SimpleCsuXacPlugin : JavaPlugin(), Listener {
         }
     }
     
-    @EventHandler
-    fun onPlayerMove(event: PlayerMoveEvent) {
-        val player = event.player
-        val from = event.from
-        val to = event.to
-        
-        if (from == to) return // No actual movement
-        
-        // Advanced physics validation with quantum precision
-        GlobalScope.launch(Dispatchers.Default) {
-            try {
-                val fromVector = Vector3D(from.x, from.y, from.z)
-                val toVector = Vector3D(to.x, to.y, to.z)
-                val velocity = Vector3D(
-                    to.x - from.x,
-                    to.y - from.y,
-                    to.z - from.z
-                )
-                
-                val environment = EnvironmentState(
-                    isOnGround = player.isOnGround,
-                    isFlying = player.isFlying,
-                    isSprinting = player.isSprinting,
-                    isInFluid = player.isInWater || player.isInLava,
-                    hasCollisions = true,
-                    blockType = null,
-                    fluidLevel = if (player.isInWater || player.isInLava) 1.0f else 0.0f
-                )
-                
-                val timestamp = System.currentTimeMillis()
-                
-                // Use advanced physics engine for validation
-                val physicsResult = advancedPhysicsEngine.validateAdvancedPhysics(
-                    player.name,
-                    fromVector,
-                    toVector,
-                    velocity,
-                    environment,
-                    timestamp
-                )
-                
-                if (!physicsResult.isValid) {
-                    server.scheduler.runTask(this@SimpleCsuXacPlugin, Runnable {
-                        // Handle physics violations
-                        handlePhysicsViolations(player, physicsResult)
-                        
-                        // Update player session
-                        val session = sessionManager.getSession(player.name)
-                        session?.let { playerSession ->
-                            // Create violation record
-                            val violation = Violation(
-                                type = ViolationType.PHYSICS_VIOLATION,
-                                confidence = physicsResult.confidence,
-                                evidence = listOf(
-                                    Evidence(
-                                        type = EvidenceType.PHYSICS_VIOLATION,
-                                        value = physicsResult.toString(),
-                                        confidence = physicsResult.confidence,
-                                        description = "Physics validation failed"
-                                    ),
-                                    Evidence(
-                                        type = EvidenceType.POSITION_MISMATCH,
-                                        value = physicsResult.positionDeviation,
-                                        confidence = physicsResult.confidence,
-                                        description = "Position deviation: ${physicsResult.positionDeviation}"
-                                    )
-                                ),
-                                timestamp = timestamp,
-                                playerId = player.name
-                            )
-
-                            // Add violation to session
-                            playerSession.addViolation(violation)
-
-                            // Process automatic action
-                            actionSystem.processViolation(player, violation)
-                        }
-                    })
-                }
-                
-                // Log movement for analysis
-                logger.fine("Player ${player.name} moved: ${fromVector} -> ${toVector}, Valid: ${physicsResult.isValid}")
-                
-            } catch (e: Exception) {
-                logger.warning("Error processing player movement for ${player.name}: ${e.message}")
-            }
-        }
-    }
-    
-    private fun handlePhysicsViolations(player: Player, result: AdvancedPhysicsValidationResult) {
-        result.violations.forEach { violation ->
-            when (violation.severity) {
-                ViolationSeverity.LOW -> {
-                    logger.info("Low severity physics violation for ${player.name}: ${violation.type}")
-                }
-                ViolationSeverity.MEDIUM -> {
-                    logger.warning("Medium severity physics violation for ${player.name}: ${violation.type}")
-                    // Send warning to player
-                    player.sendMessage("§e⚠️ Unusual movement detected. Please check your connection.")
-                }
-                ViolationSeverity.HIGH -> {
-                    logger.warning("High severity physics violation for ${player.name}: ${violation.type}")
-                    // Send stronger warning
-                    player.sendMessage("§c⚠️ Suspicious movement detected. This may result in action.")
-                }
-                ViolationSeverity.CRITICAL -> {
-                    logger.severe("CRITICAL physics violation for ${player.name}: ${violation.type}")
-                    // Take immediate action
-                    player.sendMessage("§4🚨 Critical physics violation detected!")
-                    
-                    // Create critical violation
-                    val criticalViolation = Violation(
-                        type = ViolationType.PHYSICS_VIOLATION,
-                        confidence = 1.0,
-                        evidence = listOf(
-                            Evidence(
-                                type = EvidenceType.PHYSICS_VIOLATION,
-                                value = "Critical physics violation",
-                                confidence = 1.0,
-                                description = "Critical physics violation detected"
-                            )
-                        ),
-                        timestamp = System.currentTimeMillis(),
-                        playerId = player.name
-                    )
-                    
-                    // Process automatic action (ban/kick)
-                    val result = actionSystem.processViolation(player, criticalViolation)
-                    
-                    // Log action result
-                    logger.info("Automatic action for ${player.name}: ${result.action} - ${result.reason}")
-                }
-            }
-        }
-    }
-    
     // Command Handlers
     
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
@@ -288,7 +176,6 @@ class SimpleCsuXacPlugin : JavaPlugin(), Listener {
             sender.sendMessage("§e/csuxac reload §7- Reload configuration")
             sender.sendMessage("§e/csuxac status §7- Check system status")
             sender.sendMessage("§e/csuxac stats §7- View statistics")
-            sender.sendMessage("§e/csuxac physics §7- View physics engine stats")
             sender.sendMessage("§e/csuxac test §7- Run system tests")
             return true
         }
@@ -297,43 +184,12 @@ class SimpleCsuXacPlugin : JavaPlugin(), Listener {
             "reload" -> handleReloadCommand(sender)
             "status" -> handleStatusCommand(sender)
             "stats" -> handleStatsCommand(sender)
-            "physics" -> handlePhysicsCommand(sender)
             "test" -> handleTestCommand(sender)
             else -> {
                 sender.sendMessage("§c❌ Unknown subcommand: ${args[0]}")
                 false
             }
         }
-    }
-    
-    private fun handlePhysicsCommand(sender: CommandSender): Boolean {
-        if (!sender.hasPermission("csuxac.monitor")) {
-            sender.sendMessage("§c❌ You don't have permission to use this command!")
-            return true
-        }
-        
-        val stats = advancedPhysicsEngine.getPerformanceStats()
-        
-        sender.sendMessage("§6§l🔬 Advanced Physics Engine Statistics:")
-        sender.sendMessage("§eTotal Calculations: §7${stats.totalCalculations}")
-        sender.sendMessage("§eAverage Calculation Time: §7${stats.averageCalculationTime}ns")
-        sender.sendMessage("§ePhysics Violations: §c${stats.physicsViolations}")
-        sender.sendMessage("§eActive Physics States: §7${stats.activePhysicsStates}")
-        sender.sendMessage("§eActive Fluid Simulations: §7${stats.activeFluidSimulations}")
-        sender.sendMessage("§eActive Collision Caches: §7${stats.activeCollisionCaches}")
-        sender.sendMessage("§eActive Quantum States: §7${stats.activeQuantumStates}")
-        
-        // Configuration status
-        sender.sendMessage("")
-        sender.sendMessage("§6§l⚙️ Physics Configuration:")
-        sender.sendMessage("§ePhysics Engine: §a${if (config.physics.enabled) "ENABLED" else "DISABLED"}")
-        sender.sendMessage("§eQuantum Precision: §7${config.physics.quantumPrecision}")
-        sender.sendMessage("§eMax Velocity: §7${config.physics.maxVelocity}")
-        sender.sendMessage("§eFluid Simulation: §a${if (config.physics.fluidSimulation) "ENABLED" else "DISABLED"}")
-        sender.sendMessage("§eCollision Detection: §a${if (config.physics.collisionDetection) "ENABLED" else "DISABLED"}")
-        sender.sendMessage("§eTemporal Analysis: §a${if (config.physics.temporalAnalysis) "ENABLED" else "DISABLED"}")
-        
-        return true
     }
     
     private fun handleReloadCommand(sender: CommandSender): Boolean {
@@ -386,18 +242,13 @@ class SimpleCsuXacPlugin : JavaPlugin(), Listener {
             return true
         }
         
-        val physicsStats = advancedPhysicsEngine.getPerformanceStats()
         val totalStats = sessionManager.getTotalStats()
         
         sender.sendMessage("§6§lCsuXac Core Statistics:")
-        sender.sendMessage("§eDetection Systems: §a4/4 ACTIVE")
-        sender.sendMessage("§ePhysics Engine: §aQUANTUM PRECISION")
-        sender.sendMessage("§eTotal Calculations: §7${physicsStats.totalCalculations}")
-        sender.sendMessage("§ePhysics Violations: §c${physicsStats.physicsViolations}")
+        sender.sendMessage("§eDetection Systems: §a1/4 ACTIVE")
         sender.sendMessage("§eTotal Violations: §c${totalStats.totalViolations}")
-        sender.sendMessage("§eAverage Calculation Time: §7${physicsStats.averageCalculationTime}ns")
-        sender.sendMessage("§eDetection Accuracy: §a99.8%+")
-        sender.sendMessage("§eFalse Positive Rate: §a<0.1%")
+        sender.sendMessage("§eDetection Accuracy: §aN/A")
+        sender.sendMessage("§eFalse Positive Rate: §aN/A")
         
         return true
     }
@@ -415,7 +266,6 @@ class SimpleCsuXacPlugin : JavaPlugin(), Listener {
             "Plugin System" to true,
             "Configuration System" to config.general.enabled,
             "Session Management" to true,
-            "Physics Engine" to config.physics.enabled,
             "Detection Systems" to config.detection.enabled,
             "Enforcement System" to config.enforcement.enabled,
             "Event Handling" to true,
