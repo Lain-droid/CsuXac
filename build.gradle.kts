@@ -7,9 +7,10 @@ plugins {
 group = "com.csuxac"
 version = "1.0.5-FINAL"
 
-
-
 dependencies {
+    // ProtocolLib
+    compileOnly("com.github.dmulloy2:protocollib:5.3.0")
+
     // Paper API
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
     

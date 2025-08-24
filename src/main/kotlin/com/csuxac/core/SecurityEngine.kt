@@ -28,7 +28,7 @@ class SecurityEngine(
     
     // Detection modules
     private val movementValidator = MovementValidator()
-    private val packetAnalyzer = PacketFlowAnalyzer(config.packet)
+    private val packetAnalyzer = PacketFlowAnalyzer
     private val physicsSimulator = PhysicsSimulator(config.physics)
     private val behaviorAnalyzer = BehaviorPatternAnalyzer(config.behavior)
     private val velocityEnforcer = VelocityEnforcer(config.velocity)

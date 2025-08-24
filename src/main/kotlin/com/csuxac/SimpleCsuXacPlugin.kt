@@ -14,6 +14,8 @@ import com.csuxac.core.config.CsuXacConfig
 import com.csuxac.core.detection.MovementValidator
 import com.csuxac.core.enforcement.AutomaticActionSystem
 import com.csuxac.core.models.PlayerSessionManager
+import com.csuxac.core.packet.PacketListener
+import com.comphenix.protocol.ProtocolLibrary
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
@@ -66,6 +68,14 @@ class SimpleCsuXacPlugin : JavaPlugin(), Listener {
             getCommand("csuxacreload")?.setExecutor(this)
             getCommand("csuxacstatus")?.setExecutor(this)
             
+            // Register packet listener
+            if (server.pluginManager.getPlugin("ProtocolLib") != null) {
+                ProtocolLibrary.getProtocolManager().addPacketListener(PacketListener(this))
+                logger.info("✅ ProtocolLib found, packet listener registered.")
+            } else {
+                logger.warning("⚠️ ProtocolLib not found, packet analysis will be disabled.")
+            }
+
             // Log successful startup
             logger.info("✅ CsuXac Core enabled successfully for ${server.name}")
             logger.info("🛡️ Zero-tolerance anti-cheat system activated")

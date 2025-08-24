@@ -5,7 +5,7 @@ api-version: '1.21'
 authors: [CsuXac Security Team]
 description: Ultimate Anti-Cheat System with Zero-Tolerance Policy
 website: https://csuxac.dev
-softdepend: [Vault]
+softdepend: [Vault, ProtocolLib]
 permissions:
   csuxac.admin:
     description: Full access to CsuXac Core

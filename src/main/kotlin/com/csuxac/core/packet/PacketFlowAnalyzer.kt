@@ -1,6 +1,5 @@
 package com.csuxac.core.packet
 
-import com.csuxac.config.PacketConfig
 import com.csuxac.core.models.*
 import com.csuxac.util.logging.defaultLogger
 import kotlinx.coroutines.CoroutineScope
@@ -24,9 +23,7 @@ import kotlin.math.min
  * - Anomalous packet timing
  * - Client fingerprint mismatches
  */
-class PacketFlowAnalyzer(
-    private val config: PacketConfig
-) {
+object PacketFlowAnalyzer {
     private val logger = defaultLogger()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     
@@ -78,110 +75,72 @@ class PacketFlowAnalyzer(
     )
     
     /**
-     * Analyze movement packet for anomalies
+     * Analyze an incoming packet for anomalies.
      */
-    suspend fun analyzeMovementPacket(
-        playerId: String,
-        from: Vector3D,
-        to: Vector3D,
-        timestamp: Long
-    ): PacketValidationResult {
-        val tracker = getOrCreateTracker(playerId)
-        val violations = mutableListOf<Violation>()
-        var confidence = 1.0
-        
-        try {
+    fun analyzePacket(event: com.comphenix.protocol.events.PacketEvent) {
+        val player = event.player
+        val packetType = event.packetType.toString()
+        val timestamp = System.currentTimeMillis()
+
+        scope.launch {
+            val tracker = getOrCreateTracker(player.name)
+            val violations = mutableListOf<Violation>()
+            var confidence = 1.0
+
             // Record the packet
-            val packet = PacketRecord("Move", timestamp, from, to)
+            val packet = PacketRecord(packetType, timestamp, Vector3D.ZERO, Vector3D.ZERO, player.name)
             tracker.recordPacket(packet)
-            
+
             // 1. Analyze packet flow pattern
-            val flowViolation = analyzePacketFlow(playerId, tracker)
+            val flowViolation = analyzePacketFlow(player.name, tracker)
             if (flowViolation != null) {
                 violations.add(flowViolation)
                 confidence *= 0.6
             }
             
             // 2. Check for timing anomalies
-            val timingViolation = detectTimingAnomalies(playerId, tracker)
+            val timingViolation = detectTimingAnomalies(player.name, tracker)
             if (timingViolation != null) {
                 violations.add(timingViolation)
                 confidence *= 0.7
             }
             
             // 3. Detect packet compression
-            val compressionViolation = detectPacketCompression(playerId, tracker)
+            val compressionViolation = detectPacketCompression(player.name, tracker)
             if (compressionViolation != null) {
                 violations.add(compressionViolation)
                 confidence *= 0.8
             }
             
             // 4. Check for client fingerprint mismatch
-            val fingerprintViolation = detectFingerprintMismatch(playerId, tracker)
+            val fingerprintViolation = detectFingerprintMismatch(player.name, tracker)
             if (fingerprintViolation != null) {
                 violations.add(fingerprintViolation)
                 confidence *= 0.5
             }
             
             // 5. Analyze packet size anomalies
-            val sizeViolation = detectPacketSizeAnomalies(playerId, tracker)
+            val sizeViolation = detectPacketSizeAnomalies(player.name, tracker)
             if (sizeViolation != null) {
                 violations.add(sizeViolation)
                 confidence *= 0.9
             }
             
             // 6. Check for sub-tick packet anomalies
-            val subTickViolation = detectSubTickPacketAnomalies(playerId, tracker)
+            val subTickViolation = detectSubTickPacketAnomalies(player.name, tracker)
             if (subTickViolation != null) {
                 violations.add(subTickViolation)
                 confidence *= 0.4
             }
             
             // Update anomaly score
-            updateAnomalyScore(playerId, violations.size)
+            updateAnomalyScore(player.name, violations.size)
             
-            // Determine packet flow pattern
-            val flowPattern = determineFlowPattern(tracker)
-            
-            // Calculate fingerprint match
-            val fingerprintMatch = calculateFingerprintMatch(playerId, tracker)
-            
-            return PacketValidationResult(
-                isValid = violations.isEmpty(),
-                violations = violations,
-                confidence = confidence,
-                timestamp = timestamp,
-                packetType = "Move",
-                flowPattern = flowPattern,
-                timingAnomaly = violations.any { it.type == ViolationType.TIMER_HACK },
-                fingerprintMatch = fingerprintMatch
-            )
-            
-        } catch (e: Exception) {
-            logger.error(e) { "Error during packet analysis for player $playerId" }
-            violations.add(
-                Violation(
-                    type = ViolationType.PACKET_SPOOFING,
-                    confidence = 0.9,
-                    evidence = listOf(
-                        Evidence(
-                            type = EvidenceType.PACKET_ANOMALY,
-                            value = "Analysis error: ${e.message}",
-                            confidence = 0.9,
-                            description = "Packet analysis failed due to system error"
-                        )
-                    ),
-                    timestamp = timestamp,
-                    playerId = playerId
-                )
-            )
-            
-            return PacketValidationResult(
-                isValid = false,
-                violations = violations,
-                confidence = 0.1,
-                timestamp = timestamp
-            )
+            if (violations.isNotEmpty()) {
+                logger.warn { "Packet violations for ${player.name}: ${violations.joinToString { it.type.name }}" }
+                // Here, we would normally pass these violations to the enforcement system.
+            }
+
         }
     }
     
