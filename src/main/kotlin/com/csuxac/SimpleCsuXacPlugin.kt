@@ -14,6 +14,9 @@ import com.csuxac.core.models.*
 import com.csuxac.core.config.CsuXacConfig
 import com.csuxac.core.enforcement.AutomaticActionSystem
 import com.csuxac.core.models.PlayerSessionManager
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -25,7 +28,7 @@ import kotlinx.coroutines.runBlocking
 class SimpleCsuXacPlugin : JavaPlugin(), Listener {
     
     // Advanced physics engine instance
-    // private lateinit var advancedPhysicsEngine: AdvancedPhysicsEngine
+    private lateinit var advancedPhysicsEngine: AdvancedPhysicsEngine
     
     // Configuration system
     private lateinit var config: CsuXacConfig
@@ -52,8 +55,8 @@ class SimpleCsuXacPlugin : JavaPlugin(), Listener {
             actionSystem = AutomaticActionSystem(this, config.enforcement)
             logger.info("🚨 Automatic action system initialized")
             
-                            // Initialize advanced physics engine
-        // advancedPhysicsEngine = AdvancedPhysicsEngine()
+            // Initialize advanced physics engine
+            advancedPhysicsEngine = AdvancedPhysicsEngine()
             logger.info("🔬 Advanced Physics Engine initialized with quantum precision")
             
             // Register events
@@ -136,7 +139,7 @@ class SimpleCsuXacPlugin : JavaPlugin(), Listener {
         if (from == to) return // No actual movement
         
         // Advanced physics validation with quantum precision
-        runBlocking {
+        GlobalScope.launch(Dispatchers.Default) {
             try {
                 val fromVector = Vector3D(from.x, from.y, from.z)
                 val toVector = Vector3D(to.x, to.y, to.z)
@@ -169,40 +172,42 @@ class SimpleCsuXacPlugin : JavaPlugin(), Listener {
                 )
                 
                 if (!physicsResult.isValid) {
-                    // Handle physics violations
-                    handlePhysicsViolations(player, physicsResult)
-                    
-                    // Update player session
-                    val session = sessionManager.getSession(player.name)
-                    session?.let { playerSession ->
-                        // Create violation record
-                        val violation = Violation(
-                            type = ViolationType.PHYSICS_VIOLATION,
-                            confidence = physicsResult.confidence,
-                            evidence = listOf(
-                                Evidence(
-                                    type = EvidenceType.PHYSICS_VIOLATION,
-                                    value = physicsResult.toString(),
-                                    confidence = physicsResult.confidence,
-                                    description = "Physics validation failed"
+                    server.scheduler.runTask(this@SimpleCsuXacPlugin, Runnable {
+                        // Handle physics violations
+                        handlePhysicsViolations(player, physicsResult)
+                        
+                        // Update player session
+                        val session = sessionManager.getSession(player.name)
+                        session?.let { playerSession ->
+                            // Create violation record
+                            val violation = Violation(
+                                type = ViolationType.PHYSICS_VIOLATION,
+                                confidence = physicsResult.confidence,
+                                evidence = listOf(
+                                    Evidence(
+                                        type = EvidenceType.PHYSICS_VIOLATION,
+                                        value = physicsResult.toString(),
+                                        confidence = physicsResult.confidence,
+                                        description = "Physics validation failed"
+                                    ),
+                                    Evidence(
+                                        type = EvidenceType.POSITION_MISMATCH,
+                                        value = physicsResult.positionDeviation,
+                                        confidence = physicsResult.confidence,
+                                        description = "Position deviation: ${physicsResult.positionDeviation}"
+                                    )
                                 ),
-                                Evidence(
-                                    type = EvidenceType.POSITION_MISMATCH,
-                                    value = physicsResult.positionDeviation,
-                                    confidence = physicsResult.confidence,
-                                    description = "Position deviation: ${physicsResult.positionDeviation}"
-                                )
-                            ),
-                            timestamp = timestamp,
-                            playerId = player.name
-                        )
-                        
-                        // Add violation to session
-                        playerSession.addViolation(violation)
-                        
-                        // Process automatic action
-                        actionSystem.processViolation(player, violation)
-                    }
+                                timestamp = timestamp,
+                                playerId = player.name
+                            )
+
+                            // Add violation to session
+                            playerSession.addViolation(violation)
+
+                            // Process automatic action
+                            actionSystem.processViolation(player, violation)
+                        }
+                    })
                 }
                 
                 // Log movement for analysis
